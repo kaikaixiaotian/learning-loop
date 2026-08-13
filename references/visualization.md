@@ -68,6 +68,7 @@ Visualizations must be **genuinely interactive**, not static diagrams. Minimum b
 - Self-contained: single `.html` file, all CSS/JS inline, no external dependencies (no CDN — the user may open it offline). Vanilla JS or inline `<script>` only.
 - Clear labels in Chinese matching the chapter's terminology.
 - A "重置" (reset) control so the user can replay.
+- **Auto-height:** keep the `reportHeight()` postMessage snippet from the skeleton (it reports the page's real height to the parent chapter, which resizes the iframe to fit). This is what stops the demo from being clipped at a fixed height — do not remove it.
 
 Encouraged but not required: play/pause for animations, step counters, before/after state comparison.
 

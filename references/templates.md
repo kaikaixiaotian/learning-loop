@@ -443,6 +443,14 @@ Standalone, double-click-to-open, vanilla JS, no external deps. Follow this skel
 
   // —— 初始渲染 ——
   render();
+
+  // —— 自适应高度：把本演示的实际高度 postMessage 给父页（章节页据此调整 iframe 高度，file:// 下也生效）——
+  function reportHeight(){ try { parent.postMessage({ __vizHeight: Math.ceil(document.documentElement.scrollHeight) }, '*'); } catch (e) {} }
+  reportHeight();
+  setTimeout(reportHeight, 150); setTimeout(reportHeight, 600);
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+  if (window.MutationObserver) { new MutationObserver(reportHeight).observe(document.body, { childList: true, subtree: true, attributes: true }); }
 })();
 </script>
 </body>
@@ -456,6 +464,7 @@ Standalone, double-click-to-open, vanilla JS, no external deps. Follow this skel
 - A reset control.
 - Chinese labels matching chapter terminology.
 - The `render()` pattern: one function that reads `state` and repaints everything; interactions only mutate `state` then call `render()`. This avoids partial-update bugs.
+- **Auto-height (keep the snippet):** the skeleton's `reportHeight()` posts `document.documentElement.scrollHeight` to the parent on load / resize / DOM-change; the chapter page resizes the iframe to fit. Never delete it or hard-set a tiny iframe height — clipped controls are the #1 demo usability bug.
 
 ---
 
@@ -546,7 +555,7 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
   /* embedded visualization component (was a separate link) */
   figure.viz{margin:18px 0 6px; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow-sm); background:var(--surface);}
   figure.viz figcaption{display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:.9rem;}
-  figure.viz iframe{display:block; width:100%; height:380px; border:0; background:var(--bg);}
+  figure.viz iframe{display:block; width:100%; height:460px; border:0; background:var(--bg);} /* 默认高度；页面脚本会按演示实际高度自适应，避免裁切 */
   figure.viz .viz-open{display:block; padding:8px 14px; font-size:.78rem; color:var(--muted); border-top:1px solid var(--hairline); text-decoration:none; background:var(--bg);}
   figure.viz .viz-open:hover{color:var(--accent);}
 
@@ -685,6 +694,23 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
     <p class="footer-note">学完请打开对应的 <code>*-quiz.html</code> 测验作答。</p>
   </article>
 </div>
+<script>
+  /* 演示自适应高度（read-mode 唯一的 JS，仅为演示可用性）：内嵌 viz iframe 通过 postMessage
+     上报自身实际高度，父页据此调整对应 iframe 高度。file:// 双击打开同样生效。 */
+  (function () {
+    window.addEventListener('message', function (e) {
+      var d = e.data;
+      if (!d || typeof d.__vizHeight !== 'number' || d.__vizHeight <= 0) return;
+      var frames = document.querySelectorAll('figure.viz iframe');
+      for (var i = 0; i < frames.length; i++) {
+        if (frames[i].contentWindow === e.source) {
+          frames[i].style.height = Math.max(300, Math.min(1200, d.__vizHeight)) + 'px';
+          break;
+        }
+      }
+    });
+  })();
+</script>
 </body>
 </html>
 ```

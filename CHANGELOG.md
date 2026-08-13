@@ -3,6 +3,12 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.3] - 2026-08-13
+
+### 修复
+- **演示区自适应高度**：交互演示（viz）不再被固定高度裁切。演示文件的 `reportHeight()` 把自身实际高度 `postMessage` 给父页（load/resize/DOM 变化时上报），章节页监听后把对应 iframe 高度调到刚好（300–1200px 钳位）。`file://` 双击打开同样生效——postMessage 不受同源 DOM 限制（不像读 `contentDocument` 会被挡）。
+- `templates.md`：章节骨架加自适应监听脚本（read-mode 唯一 JS，仅为演示可用性）+ iframe 默认高度 380→460；viz 骨架加 `reportHeight()` 片段；两处骨架的 non-negotiables 与 `visualization.md` 注明「必须保留该片段，禁止写死过小高度」。
+
 ## [1.3.2] - 2026-08-13
 
 ### 新增
