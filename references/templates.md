@@ -555,6 +555,12 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
   :not(pre)>code{background:var(--surface-2); padding:2px 6px; border-radius:5px;}
   .footer-note{margin-top:40px; padding-top:18px; border-top:1px solid var(--hairline); color:var(--muted); font-size:.92rem;}
 
+  /* 补讲（超纲/补充教学）样式 */
+  [id]{scroll-margin-top:24px;}
+  .backfill-badge{display:inline-block; font-size:.68rem; font-weight:700; letter-spacing:.04em; color:#fff; background:#f59e0b; padding:2px 8px; border-radius:999px; vertical-align:middle; margin-left:8px;}
+  .backfill-meta{font-size:.82rem; color:var(--muted); margin:2px 0 10px;}
+  aside.toc .toc-sub{font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:16px 0 6px 14px;}
+  aside.toc a[href^="#backfill-"]::before{content:"＋ "; color:#f59e0b; font-weight:700;}
   @media (max-width:900px){.page{display:block; padding:24px 16px 80px;} aside.toc{display:none;}}
 </style>
 </head>
@@ -570,6 +576,11 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
       <a href="#sec-practice">实战演示</a>
       <a href="#sec-pit">常见陷阱</a>
       <a href="#sec-summary">小结自查</a>
+      <!-- 补讲（仅当本章有超纲补讲时才有）：在目录末尾按此格式追加，每个补讲一条快捷跳转 -->
+      <!--
+      <p class="toc-sub">补讲</p>
+      <a href="#backfill-format-width-align">格式串的宽度与对齐</a>
+      -->
     </nav>
   </aside>
 
@@ -625,7 +636,30 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
       <!-- 同样六要素；若该概念有演示，再加一个 <figure class="viz"> -->
     </ol>
 
-    <h2 id="sec-practice"><span class="nh">03</span> 实战演示</h2>
+    <!-- ====== 补讲（可选；仅当出现超纲补讲时才有）======
+     位置：核心概念之后、实战演示之前。规范（必须全部遵守）：
+     ① 放在 <h2 id="sec-backfill">补讲</h2> 之下；
+     ② 每个补讲：<h3 id="backfill-<slug>">标题 <span class="backfill-badge">补讲</span></h3>
+        + <p class="backfill-meta">KP·日期·来源（如：KP6 补充 · 2026-08-13 阶段总测验超纲补讲）</p>
+        + 六要素 <ol class="elements">（与核心概念同结构）；
+     ③ 在左侧 <aside class="toc"> 的 nav 末尾（小结自查之后）按 toc-sub 分组追加
+        <a href="#backfill-<slug>">跳转链接</a>。详见 references/grading.md「补讲」。 -->
+<!--
+<h2 id="sec-backfill"><span class="nh">★</span> 补讲</h2>
+
+<h3 id="backfill-format-width-align">格式串的宽度与对齐 <span class="backfill-badge">补讲</span></h3>
+<p class="backfill-meta">KP6 补充 · 2026-08-13 阶段总测验超纲补讲</p>
+<ol class="elements">
+  <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
+  <li><span class="el-label">② 直觉解释</span><div class="el-body">…</div></li>
+  <li><span class="el-label">③ 最小例子</span><div class="el-body">…</div></li>
+  <li><span class="el-label">④ 推导或代码</span><div class="el-body">…</div></li>
+  <li><span class="el-label">⑤ 边界条件</span><div class="el-body">…</div></li>
+  <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">…</div></li>
+</ol>
+-->
+
+<h2 id="sec-practice"><span class="nh">03</span> 实战演示</h2>
     <p>&lt;端到端例子，可复现命令/推导&gt;</p>
     <pre><code>&lt;代码或命令序列 + 预期输出&gt;</code></pre>
 

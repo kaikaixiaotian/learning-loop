@@ -116,7 +116,7 @@ This is a critical fairness rule. The chapter doc has a **知识点清单 (KP li
 **Recovery (补讲补考) — mandatory when 超纲 is found:**
 This is the fix, not just the excuse. When ANY 超纲 question is detected:
 1. **Tell the user explicitly** at grading time: "第 X 题考点（<concept>）本章未讲解，已判定为超纲不计分。"
-2. **补讲 (re-teach):** append the missing concept to the chapter doc (or note it for the next version), covering the same six-element structure. If you have web research available, ground it; otherwise teach from first principles.
+2. **补讲 (re-teach):** append the missing concept to the chapter doc as a **补讲 section** so it is navigable, not buried. Place it under `<h2 id="sec-backfill">补讲</h2>` (after 核心概念, before 实战演示); each补讲 is `<h3 id="backfill-<slug>">title <span class="backfill-badge">补讲</span></h3>` + `<p class="backfill-meta">KP·日期·来源</p>` (e.g. `KP6 补充 · 2026-08-13 阶段总测验超纲补讲`) + the six-element `<ol class="elements">` (same structure as core concepts). **Also add a quick-jump entry** for it in the left `<aside class="toc">`: a `<p class="toc-sub">补讲</p>` group after 小结自查, with `<a href="#backfill-<slug>">title</a>` per补讲. Skeleton + CSS in `references/templates.md`. If you have web research available, ground it; otherwise teach from first principles. (If a rebuild is already in progress, you may instead note it for the next version.)
 3. **补考 (re-test):** generate ONE replacement question of the **same type and point value**, testing the newly-taught concept (now in-scope). Ask it — for a chapter-quiz replacement, append to the live plan-quiz round; for a plan-quiz replacement, ask it inline right after the补讲.
 4. The replacement question IS counted normally. The user is never left with a knowledge gap just because the original quiz drifted out of scope.
 

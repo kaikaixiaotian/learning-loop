@@ -3,6 +3,12 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.2] - 2026-08-13
+
+### 新增
+- **补讲纳入左侧目录（可快捷跳转）**：超纲/补充教学（补讲）现在有标准骨架——`<h2 id="sec-backfill">补讲</h2>` 下每个补讲为 `<h3 id="backfill-<slug>">标题 <span class="backfill-badge">补讲</span></h3>` + 来源 meta（KP·日期·来源）+ 六要素 `<ol class="elements">`；左侧 `<aside class="toc">` 末尾按「补讲」分组追加 `<a href="#backfill-<slug>">` 跳转链接。
+- `templates.md` 增补讲 CSS（琥珀徽章 / meta / toc-sub / `::before` 前缀）与注释化示例；`SKILL.md`、`grading.md` 的补讲指令补全骨架约定（id + 徽章 + 六要素 + 目录跳转 四件套）。
+
 ## [1.3.1] - 2026-08-13
 
 ### 修复
