@@ -12,7 +12,7 @@ Markdown quiz files force the user to edit raw text (`**你的答案：** ___`),
 
 ### Mode A: read-mode (chapter docs, master plan, progress)
 
-User only **reads** — no form, no submission. A chapter doc is a long, styled, scrollable page with the six-element concept structure, KP list, and 🖼️ links to visualizations (or inline `<iframe>` of them). The master plan is a collapsible stage tree with a progress bar. No JS needed beyond optional collapsible-section toggles.
+User only **reads** — no form, no submission. A chapter doc is a long, styled, scrollable page with a sticky table of contents, the six-element concept structure (as a scannable `ol.elements` definition list, not a wall of text), a KP list, and 🖼️ visualizations **embedded inline** as `<iframe>` (loaded from `./viz/*.html`, with an "open in new tab" fallback link). The master plan is a collapsible stage tree with a progress bar. No JS needed beyond optional collapsible-section toggles.
 
 ### Mode B: quiz-form (baseline, chapter-quiz, stage-total-quiz)
 

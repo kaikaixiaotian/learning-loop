@@ -471,79 +471,183 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>阶段< N > · 章节< XX > — <title></title>
 <style>
-  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; max-width: 820px; margin: 24px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
-  h1 { font-size: 1.5rem; border-bottom: 2px solid #eee; padding-bottom: 8px; }
-  h2 { font-size: 1.2rem; margin-top: 28px; border-left: 4px solid #4a90d9; padding-left: 10px; }
-  h3 { font-size: 1.05rem; margin-top: 20px; color: #2c3e50; }
-  .meta { color: #666; font-size: 0.9rem; margin-bottom: 16px; }
-  .objectives { background: #f0f7ff; border-left: 4px solid #4a90d9; padding: 10px 14px; margin: 12px 0; }
-  .kp-list { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
-  .kp-list ul { margin: 6px 0; padding-left: 20px; }
-  .concept-element { margin: 4px 0; }
-  .concept-element strong { color: #4a90d9; }
-  pre, code { background: #f5f5f5; border-radius: 4px; }
-  pre { padding: 10px; overflow-x: auto; }
-  code { padding: 1px 5px; font-size: 0.9em; }
-  .viz-link { display: inline-block; background: #e8f5e9; border: 1px solid #81c784; border-radius: 6px; padding: 6px 12px; margin: 8px 0; text-decoration: none; color: #2e7d32; }
-  .viz-link:hover { background: #c8e6c9; }
-  .pitfall { background: #fff4e5; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 8px 0; }
-  .summary { background: #f3e5f5; border-radius: 6px; padding: 12px 16px; margin-top: 20px; }
-  details summary { cursor: pointer; font-weight: 600; margin: 12px 0 6px; }
+  /* ===== shared design system (same vars as quiz-form) ===== */
+  :root{
+    --bg:#ffffff; --surface:#f7f8fa; --surface-2:#eef0f3;
+    --text:#1f2328; --muted:#57606a; --faint:#8b949e;
+    --accent:#4f46e5; --accent-soft:#eef2ff; --accent-border:#c7d2fe;
+    --border:#d9dde3; --hairline:#eceef1; --code-bg:#f6f8fa;
+    --obj-bg:#eef2ff;  --obj-bd:#4f46e5;
+    --kp-bg:#fffbeb;   --kp-bd:#fcd34d;  --kp-text:#92580a;
+    --pit-bg:#fff7ed;  --pit-bd:#fb923c; --pit-text:#9a3412;
+    --sum-bg:#f5f3ff;  --sum-bd:#a78bfa; --sum-text:#5b21b6;
+    --r-sm:8px; --r:12px; --r-lg:16px;
+    --shadow-sm:0 1px 2px rgba(31,35,40,.06); --shadow:0 6px 20px rgba(31,35,40,.08);
+    --maxw:760px;
+    --font-sans:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    --font-mono:"SFMono-Regular",ui-monospace,"Cascadia Code",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0d1117; --surface:#161b22; --surface-2:#21262d;
+    --text:#e6edf3; --muted:#9198a1; --faint:#6e7681;
+    --accent:#818cf8; --accent-soft:#1e1b4b; --accent-border:#4338ca;
+    --border:#30363d; --hairline:#21262d; --code-bg:#161b22;
+    --obj-bg:#1e1b4b; --kp-bg:#3b2f10; --kp-bd:#a16207; --kp-text:#fde68a;
+    --pit-bg:#3b1d10; --pit-bd:#c2410c; --pit-text:#fed7aa;
+    --sum-bg:#2e1065; --sum-bd:#7c3aed; --sum-text:#ddd6fe;
+    --shadow:0 6px 24px rgba(0,0,0,.5);
+  }}
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--font-sans); background:var(--bg); color:var(--text); line-height:1.75; margin:0; -webkit-font-smoothing:antialiased;}
+  .page{display:flex; gap:48px; max-width:1080px; margin:0 auto; padding:40px 24px 96px;}
+
+  /* sticky table of contents (CSS-only) */
+  aside.toc{position:sticky; top:40px; align-self:flex-start; width:188px; flex:0 0 188px; font-size:.82rem; color:var(--muted);}
+  aside.toc .toc-title{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:0 0 10px 14px;}
+  aside.toc nav{display:flex; flex-direction:column; gap:2px; border-left:1px solid var(--hairline);}
+  aside.toc a{display:block; padding:6px 14px; color:var(--muted); text-decoration:none; border-left:2px solid transparent; margin-left:-1px; transition:.15s;}
+  aside.toc a:hover{color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft);}
+
+  article.content{max-width:var(--maxw); width:100%; min-width:0;}
+  .eyebrow{font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  h1{font-size:1.85rem; line-height:1.3; margin:0 0 12px; letter-spacing:-.01em;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px;}
+  .meta .chip{font-size:.78rem; color:var(--muted); background:var(--surface); border:1px solid var(--border); padding:4px 10px; border-radius:999px;}
+
+  h2{font-size:1.3rem; margin:44px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--hairline); display:flex; align-items:baseline; gap:12px;}
+  h2 .nh{color:var(--accent); font-size:.95rem; font-weight:700;}
+  h3{font-size:1.12rem; margin:32px 0 10px; color:var(--text);}
+  p{margin:0 0 14px;}
+
+  /* callout cards */
+  .callout{border-radius:var(--r); padding:16px 18px; margin:16px 0; border:1px solid var(--border); background:var(--surface); border-left:4px solid var(--accent);}
+  .callout .ct{font-weight:700; margin-bottom:6px;}
+  .objectives{background:var(--obj-bg); border-color:var(--obj-bd);} .objectives .ct{color:var(--obj-bd);}
+  .objectives ul,.summary ul{margin:6px 0 0; padding-left:20px;}
+  .kp{background:var(--kp-bg); border-color:var(--kp-bd);} .kp .ct{color:var(--kp-text);}
+  .kp .hint{font-size:.82rem; color:var(--muted); margin:2px 0 10px;}
+  .kp .kp-tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .kp .kp-tags span{font-size:.82rem; background:var(--bg); border:1px solid var(--kp-bd); color:var(--kp-text); padding:4px 11px; border-radius:999px;}
+  .pitfall{background:var(--pit-bg); border-color:var(--pit-bd); margin:10px 0;} .pitfall .ct{color:var(--pit-text);}
+  .summary{background:var(--sum-bg); border-color:var(--sum-bd); margin-top:32px;} .summary .ct{color:var(--sum-text);}
+  .summary .self{font-size:.88rem; color:var(--muted); margin-top:10px;}
+
+  /* the six-element list — turns the wall-of-text into a scannable definition list */
+  ol.elements{list-style:none; margin:10px 0 0; padding:0; border:1px solid var(--hairline); border-radius:var(--r); overflow:hidden;}
+  ol.elements > li{display:grid; grid-template-columns:148px 1fr; gap:6px 18px; padding:14px 18px; border-top:1px solid var(--hairline);}
+  ol.elements > li:first-child{border-top:none;}
+  ol.elements .el-label{font-weight:700; font-size:.85rem; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-border); padding:4px 10px; border-radius:var(--r-sm); height:fit-content; white-space:nowrap;}
+  ol.elements .el-body{min-width:0;} ol.elements .el-body p{margin:0 0 8px;} ol.elements .el-body p:last-child{margin-bottom:0;}
+
+  /* embedded visualization component (was a separate link) */
+  figure.viz{margin:18px 0 6px; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow-sm); background:var(--surface);}
+  figure.viz figcaption{display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:.9rem;}
+  figure.viz iframe{display:block; width:100%; height:380px; border:0; background:var(--bg);}
+  figure.viz .viz-open{display:block; padding:8px 14px; font-size:.78rem; color:var(--muted); border-top:1px solid var(--hairline); text-decoration:none; background:var(--bg);}
+  figure.viz .viz-open:hover{color:var(--accent);}
+
+  pre{background:var(--code-bg); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:14px 16px; overflow-x:auto; margin:12px 0;}
+  code{font-family:var(--font-mono); font-size:.88em;} pre code{font-size:.85rem;}
+  :not(pre)>code{background:var(--surface-2); padding:2px 6px; border-radius:5px;}
+  .footer-note{margin-top:40px; padding-top:18px; border-top:1px solid var(--hairline); color:var(--muted); font-size:.92rem;}
+
+  @media (max-width:900px){.page{display:block; padding:24px 16px 80px;} aside.toc{display:none;}}
 </style>
 </head>
 <body>
-<h1>阶段< N > · 章节< XX > — <title></h1>
-<div class="meta">版本 v&lt;version&gt; · 前置：&lt;prev&gt; · 预计学习时间：&lt;X&gt;min</div>
-<div class="objectives">
-  <strong>本章节目标：</strong>学完后你应当能——
-  <ul><li>&lt;capability 1&gt;</li><li>&lt;capability 2&gt;</li></ul>
+<div class="page">
+  <aside class="toc">
+    <p class="toc-title">本章目录</p>
+    <nav>
+      <a href="#sec-obj">学习目标</a>
+      <a href="#sec-intro">引入</a>
+      <a href="#sec-kp">知识点清单</a>
+      <a href="#sec-core">核心概念</a>
+      <a href="#sec-practice">实战演示</a>
+      <a href="#sec-pit">常见陷阱</a>
+      <a href="#sec-summary">小结自查</a>
+    </nav>
+  </aside>
+
+  <article class="content">
+    <div class="eyebrow">阶段< N > · 章节< XX ></div>
+    <h1>&lt;title&gt;</h1>
+    <div class="meta">
+      <span class="chip">版本 v&lt;version&gt;</span>
+      <span class="chip">前置：&lt;prev&gt;</span>
+      <span class="chip">预计 &lt;X&gt;min</span>
+    </div>
+
+    <section id="sec-obj" class="callout objectives">
+      <div class="ct">🎯 本章节目标</div>
+      <div>学完后你应当能——</div>
+      <ul><li>&lt;capability 1&gt;</li><li>&lt;capability 2&gt;</li></ul>
+    </section>
+
+    <h2 id="sec-intro"><span class="nh">01</span> 引入</h2>
+    <p>&lt;一个真实问题或反直觉现象，2-4 句话&gt;</p>
+
+    <section id="sec-kp" class="callout kp">
+      <div class="ct">📋 知识点清单（本章覆盖度基准）</div>
+      <div class="hint">测验出题范围的唯一基准。每个考点必须映射回这里的一项。</div>
+      <div class="kp-tags">
+        <span><strong>KP1</strong> · &lt;一句话知识点&gt;</span>
+        <span><strong>KP2</strong> · &lt;一句话知识点&gt;</span>
+        <span><strong>KP3</strong> · &lt;一句话知识点&gt;</span>
+      </div>
+    </section>
+
+    <h2 id="sec-core"><span class="nh">02</span> 核心概念</h2>
+
+    <h3>1. &lt;concept&gt;</h3>
+    <ol class="elements">
+      <li><span class="el-label">① 精确定义</span><div class="el-body">&lt;公式/签名/语法/语义&gt;</div></li>
+      <li><span class="el-label">② 直觉解释</span><div class="el-body">&lt;类比/心智模型&gt;</div></li>
+      <li><span class="el-label">③ 最小例子</span><div class="el-body">&lt;输入→输出，可验证&gt;</div></li>
+      <li><span class="el-label">④ 推导或代码</span><div class="el-body">&lt;逐步推导/逐行注释&gt;</div></li>
+      <li><span class="el-label">⑤ 边界条件</span><div class="el-body">&lt;何时适用/失效&gt;</div></li>
+      <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">&lt;和 X 的区别&gt;</div></li>
+    </ol>
+    <!-- 可选：交互演示。决定要画的 KP 才加 <figure class="viz">；不画的不留占位 -->
+    <figure class="viz">
+      <figcaption>🖼️ 交互演示：&lt;一句话名&gt;</figcaption>
+      <iframe src="./viz/stageN-chXX-<kp-slug>.html" loading="lazy" title="&lt;演示名&gt;"></iframe>
+      <a class="viz-open" href="./viz/stageN-chXX-<kp-slug>.html" target="_blank">在新标签页打开 ↗</a>
+    </figure>
+
+    <h3>2. &lt;concept&gt;</h3>
+    <ol class="elements">
+      <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
+      <!-- 同样六要素；若该概念有演示，再加一个 <figure class="viz"> -->
+    </ol>
+
+    <h2 id="sec-practice"><span class="nh">03</span> 实战演示</h2>
+    <p>&lt;端到端例子，可复现命令/推导&gt;</p>
+    <pre><code>&lt;代码或命令序列 + 预期输出&gt;</code></pre>
+
+    <h2 id="sec-pit"><span class="nh">04</span> 常见陷阱 &amp; 易错点</h2>
+    <div class="callout pitfall">
+      <div class="ct">⚠️ 陷阱 1（关联 KP-x）</div>
+      <div>&lt;描述&gt;</div>
+    </div>
+    <div class="callout pitfall">
+      <div class="ct">⚠️ 陷阱 2</div>
+      <div>&lt;描述&gt;</div>
+    </div>
+
+    <section id="sec-summary" class="callout summary">
+      <div class="ct">✅ 小结 &amp; 自查</div>
+      <ul>
+        <li>&lt;takeaway 1&gt;</li>
+        <li>&lt;takeaway 2&gt;</li>
+      </ul>
+      <div class="self">自测：对照知识点清单，你能否对每一项给出定义+例子？</div>
+    </section>
+
+    <p class="footer-note">学完请打开对应的 <code>*-quiz.html</code> 测验作答。</p>
+  </article>
 </div>
-
-<h2>引入</h2>
-<p>&lt;一个真实问题或反直觉现象，2-4 句话&gt;</p>
-
-<div class="kp-list">
-  <strong>📋 知识点清单（本章覆盖度基准）</strong>
-  <p style="font-size:0.85rem;color:#666;">测验出题范围的唯一基准。每个考点必须映射回这里的一项。</p>
-  <ul>
-    <li><strong>KP1</strong>：&lt;一句话知识点&gt;</li>
-    <li><strong>KP2</strong>：&lt;一句话知识点&gt;</li>
-    <li><strong>KP3</strong>：…</li>
-  </ul>
-</div>
-
-<h2>核心概念</h2>
-<h3>1. &lt;concept&gt;</h3>
-<p class="concept-element"><strong>① 精确定义：</strong>&lt;公式/签名/语法&gt;</p>
-<p class="concept-element"><strong>② 直觉解释：</strong>&lt;类比/心智模型&gt;</p>
-<p class="concept-element"><strong>③ 最小例子：</strong>&lt;输入输出&gt;</p>
-<p class="concept-element"><strong>④ 推导或代码：</strong>&lt;逐步推导/逐行注释&gt;</p>
-<p class="concept-element"><strong>⑤ 边界条件：</strong>&lt;何时适用/失效&gt;</p>
-<p class="concept-element"><strong>⑥ 与相关概念对比：</strong>&lt;和 X 的区别&gt;</p>
-<!-- 可选：交互演示。决定要画的 KP 才加，不画的不加占位 -->
-<a class="viz-link" href="./viz/stageN-chXX-<kp-slug>.html">🖼️ 交互演示：&lt;一句话名&gt; — &lt;用户能看到/做到什么&gt;</a>
-
-<h3>2. &lt;concept&gt;</h3>
-<p>&lt;同样六要素&gt;</p>
-
-<h2>实战演示</h2>
-<p>&lt;端到端例子，可复现命令/推导&gt;</p>
-<pre><code>&lt;代码或命令序列 + 预期输出&gt;</code></pre>
-
-<h2>常见陷阱 &amp; 易错点</h2>
-<div class="pitfall">&lt;陷阱 1，关联 KP-x&gt;</div>
-<div class="pitfall">&lt;陷阱 2&gt;</div>
-
-<div class="summary">
-  <strong>小结 &amp; 自查</strong>
-  <ul>
-    <li>&lt;takeaway 1&gt;</li>
-    <li>&lt;takeaway 2&gt;</li>
-  </ul>
-  <p style="font-size:0.9rem;">自测：对照知识点清单，你能否对每一项给出定义+例子？</p>
-</div>
-
-<p style="margin-top:24px;color:#666;">学完请打开对应的 <code>*-quiz.html</code> 测验作答。</p>
 </body>
 </html>
 ```
@@ -562,38 +666,62 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>章节测验 — 阶段< N >·章节< XX ></title>
 <style>
-  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; max-width: 820px; margin: 24px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
-  h1 { font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 8px; }
-  h2 { font-size: 1.15rem; margin-top: 28px; border-left: 4px solid #4a90d9; padding-left: 10px; }
-  .info { background: #f0f7ff; border-left: 4px solid #4a90d9; padding: 10px 14px; margin: 12px 0; font-size: 0.92rem; }
-  fieldset.question { border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: #fafafa; }
-  fieldset.question legend { font-weight: 600; color: #2c3e50; }
-  .qmeta { font-size: 0.82rem; color: #888; margin-bottom: 8px; }
-  label.option { display: block; padding: 4px 0; cursor: pointer; }
-  label.option:hover { background: #e3f2fd; border-radius: 4px; padding-left: 6px; }
-  textarea { width: 100%; min-height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 0.95rem; resize: vertical; }
-  input[type=text] { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
-  .controls { position: sticky; bottom: 0; background: #fff; padding: 14px 0; border-top: 1px solid #eee; text-align: center; }
-  button { padding: 10px 28px; margin: 0 8px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: 600; }
-  #submitBtn { background: #4caf50; color: #fff; }
-  #submitBtn:hover { background: #43a047; }
-  button[type=reset] { background: #e0e0e0; color: #333; }
-  #answerOutput { background: #263238; color: #80cbc4; padding: 12px; border-radius: 6px; font-size: 0.85rem; white-space: pre-wrap; word-break: break-all; margin-top: 16px; }
-  /* 逐题批注位（每题 fieldset 内部，AI 批改后填充） */
-  .feedback { margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; display: none; }
-  .feedback.shown { display: block; }
-  .feedback.correct { background: #e8f5e9; border-left: 4px solid #43a047; }
-  .feedback.wrong { background: #ffebee; border-left: 4px solid #e53935; }
-  .feedback.partial { background: #fff8e1; border-left: 4px solid #ffb300; }
-  .feedback.out-of-scope { background: #f3e5f5; border-left: 4px solid #8e24aa; }
-  .feedback .verdict { font-weight: 700; }
-  .feedback.correct .verdict { color: #2e7d32; }
-  .feedback.wrong .verdict { color: #c62828; }
-  .feedback.partial .verdict { color: #f57f17; }
-  .feedback.out-of-scope .verdict { color: #8e24aa; }
+  /* ===== shared design system (same vars as read-mode chapter) ===== */
+  :root{
+    --bg:#ffffff; --surface:#f7f8fa; --surface-2:#eef0f3;
+    --text:#1f2328; --muted:#57606a; --faint:#8b949e;
+    --accent:#4f46e5; --accent-soft:#eef2ff; --accent-border:#c7d2fe;
+    --border:#d9dde3; --hairline:#eceef1; --code-bg:#161b22;
+    --r-sm:8px; --r:12px; --r-lg:16px; --shadow-sm:0 1px 2px rgba(31,35,40,.06);
+    --font-sans:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    --font-mono:"SFMono-Regular",ui-monospace,"Cascadia Code",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0d1117; --surface:#161b22; --surface-2:#21262d;
+    --text:#e6edf3; --muted:#9198a1; --faint:#6e7681;
+    --accent:#818cf8; --accent-soft:#1e1b4b; --accent-border:#4338ca;
+    --border:#30363d; --hairline:#21262d; --code-bg:#0d1117;
+  }}
+  *{box-sizing:border-box;}
+  body{font-family:var(--font-sans); background:var(--bg); color:var(--text); line-height:1.7; max-width:860px; margin:0 auto; padding:40px 24px 140px; -webkit-font-smoothing:antialiased;}
+  h1{font-size:1.6rem; margin:0 0 16px; letter-spacing:-.01em; border-bottom:none; padding-bottom:0;}
+  h1::before{content:"章节测验"; display:block; font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  h2{font-size:1.05rem; margin:32px 0 14px; padding-bottom:8px; border-left:none; padding-left:0; border-bottom:1px solid var(--hairline); color:var(--muted);}
+  .info{background:var(--accent-soft); border:1px solid var(--accent-border); border-left:4px solid var(--accent); border-radius:var(--r); padding:14px 16px; margin:0 0 28px; font-size:.92rem; color:var(--text);}
+  .info strong{color:var(--accent);}
+  .info code{background:var(--surface-2); padding:1px 5px; border-radius:4px;}
+  fieldset.question{border:1px solid var(--border); border-radius:var(--r-lg); padding:16px 18px; margin:14px 0; background:var(--bg); box-shadow:var(--shadow-sm);}
+  fieldset.question legend{font-weight:700; font-size:1.02rem; color:var(--text); padding:0 4px;}
+  .qmeta{font-size:.78rem; color:var(--muted); margin:4px 0 12px;}
+  label.option{display:flex; align-items:center; gap:10px; padding:10px 12px; margin:6px 0; border:1px solid var(--hairline); border-radius:var(--r-sm); cursor:pointer; transition:.15s; background:var(--bg);}
+  label.option:hover{border-color:var(--accent-border); background:var(--accent-soft);}
+  label.option input{width:18px; height:18px; accent-color:var(--accent); cursor:pointer; margin:0; flex:0 0 18px;}
+  label.option:has(input:checked){border-color:var(--accent); background:var(--accent-soft);}
+  textarea{width:100%; min-height:110px; padding:10px 12px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--bg); color:var(--text); font-family:inherit; font-size:.95rem; resize:vertical; line-height:1.6; transition:.15s;}
+  input[type=text]{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--bg); color:var(--text); font-family:inherit; font-size:.95rem; transition:.15s;}
+  textarea:focus, input[type=text]:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+  .controls{position:sticky; bottom:0; background:linear-gradient(var(--bg) 55%, transparent); padding:18px 0; border-top:none; text-align:center; margin-top:24px;}
+  button{padding:12px 30px; margin:0 8px; border:none; border-radius:var(--r-sm); font-size:1rem; cursor:pointer; font-weight:600; font-family:inherit; transition:.15s;}
+  #submitBtn{background:var(--accent); color:#fff; box-shadow:var(--shadow-sm);}
+  #submitBtn:hover{filter:brightness(1.08);}
+  button[type=reset]{background:var(--surface); color:var(--muted); border:1px solid var(--border);}
+  button[type=reset]:hover{color:var(--text);}
+  #answerOutput{background:var(--code-bg); color:#9ca3af; border:1px solid var(--hairline); padding:14px 16px; border-radius:var(--r-sm); font-family:var(--font-mono); font-size:.82rem; white-space:pre-wrap; word-break:break-all; margin-top:16px;}
+  /* 逐题批注位（每题 fieldset 内部，AI 批改后填充） — 机制与类名保持不变 */
+  .feedback{margin-top:12px; padding:10px 14px; border-radius:var(--r-sm); font-size:.88rem; display:none;}
+  .feedback.shown{display:block;}
+  .feedback.correct{background:#e8f5e9; border-left:4px solid #43a047;}
+  .feedback.wrong{background:#ffebee; border-left:4px solid #e53935;}
+  .feedback.partial{background:#fff8e1; border-left:4px solid #ffb300;}
+  .feedback.out-of-scope{background:#f3e5f5; border-left:4px solid #8e24aa;}
+  .feedback .verdict{font-weight:700;}
+  .feedback.correct .verdict{color:#2e7d32;}
+  .feedback.wrong .verdict{color:#c62828;}
+  .feedback.partial .verdict{color:#f57f17;}
+  .feedback.out-of-scope .verdict{color:#8e24aa;}
   /* 总分汇总条（批改后显示在提交按钮下方） */
-  #gradingSummary { margin-top: 20px; padding: 14px 18px; border-radius: 8px; background: #e3f2fd; font-size: 1.05rem; font-weight: 600; }
-  .src-tag { font-size: 0.78rem; color: #1976d2; }
+  #gradingSummary{margin-top:20px; padding:16px 20px; border-radius:var(--r); background:var(--accent-soft); border:1px solid var(--accent-border); font-size:1.08rem; font-weight:700; color:var(--accent);}
+  .src-tag{font-size:.78rem; color:var(--accent);}
 </style>
 </head>
 <body data-quiz="stageN-chXX-quiz">

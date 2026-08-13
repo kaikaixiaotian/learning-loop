@@ -3,6 +3,14 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.0] - 2026-08-13
+
+### 变更
+- **重新设计章节学习页（read-mode）**：精致阅读型——共享设计系统（CSS 变量 + 自动深色模式）、左侧粘性目录、六要素从挤压的 `<p>` 改为可扫读的 `ol.elements` 定义列表、四种 callout 卡片统一。
+- **演示改为内嵌组件**：viz 从指向独立文件的 `<a class="viz-link">` 改为 `<figure class="viz">` 内嵌 `<iframe>`（演示文件仍是 `viz/` 下独立可复用的 `.html`），用户学习时直接在章节页内交互、不再跳转。仅对决定要画的 KP 渲染 `<figure>`。
+- **重新设计答题页（quiz-form）**：仅替换 CSS 表现层（卡片化题目、`accent-color` 选项、focus ring、粘性提交条、美化批注与总分横幅），共享同一设计系统 + 自动深色；**所有评分/续学契约逐字节保留**（`body[data-quiz]`/`#quizForm`/`#submitBtn`/`#answerOutput`/`#restoreData`/`#quizKey`/`#gradingSummary`/`#fb-qN` 空形态、`name=id=qid`、submit+restore JS 原样、`.feedback.shown`+四 verdict 类）。
+- 同步更新 `visualization.md`、`html-format.md`、`subagent-protocol.md`、`SKILL.md`、`upgrade.md` 中演示嵌入与六要素的描述。
+
 ## [1.2.0] - 2026-08-13
 
 ### 变更

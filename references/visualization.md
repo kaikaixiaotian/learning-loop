@@ -35,21 +35,27 @@ A chapter typically warrants 0–3 visualizations. Zero is fine — do not manuf
 
 ## How to embed in the chapter doc
 
-The chapter doc is now itself an HTML file (read-mode, per `references/html-format.md`), so the viz link is an HTML anchor, not markdown. Save each visualization as a standalone `.html` file and link to it from the chapter doc HTML.
+The chapter doc is now itself an HTML file (read-mode, per `references/html-format.md`), so each visualization is **embedded inline** as a component via an `<iframe>` — not a link that opens a new tab. The visualization is still saved as a standalone `.html` file: it opens fine on its own AND is loaded into the chapter page, so the user interacts with it in-place while reading.
 
-**File location:** `<workspace>/chapters/viz/stageN-chXX-<kp-slug>.html` (one file per visualized KP; `viz/` subfolder keeps them organized).
+**File location:** `<workspace>/chapters/viz/stageN-chXX-<kp-slug>.html` (one file per visualized KP; `viz/` subfolder keeps them organized). The file remains double-click-openable and reusable; the iframe just loads it inline.
 
-**Link format in the chapter doc HTML** — place the link inline within the relevant 核心概念 subsection, right after the ⑥对比 element, so the user hits it at the moment of learning that concept:
+**Embed format in the chapter doc HTML** — place the `<figure class="viz">` inline within the relevant 核心概念 subsection, right after that concept's six-element `<ol class="elements">`, so the user reaches it at the moment of learning that concept:
 
 ```html
 <h3>2. max-age 相对新鲜期</h3>
-<p class="concept-element"><strong>① 精确定义：</strong>…</p>
-…
-<p class="concept-element"><strong>⑥ 与相关概念对比：</strong>…</p>
-<a class="viz-link" href="./viz/stage1-ch01-max-age.html">🖼️ 交互演示：max-age 新鲜期滑块演示 — 拖动滑块改变 max-age，观察缓存从"新鲜"变"过期"的临界点</a>
+<ol class="elements">
+  <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
+  …
+  <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">…</div></li>
+</ol>
+<figure class="viz">
+  <figcaption>🖼️ 交互演示：max-age 新鲜期滑块</figcaption>
+  <iframe src="./viz/stage1-ch01-max-age.html" loading="lazy" title="max-age 新鲜期滑块演示"></iframe>
+  <a class="viz-open" href="./viz/stage1-ch01-max-age.html" target="_blank">在新标签页打开 ↗</a>
+</figure>
 ```
 
-The `🖼️` emoji + `交互演示` label makes the link scannable. The one-line description tells the user what they'll see and do. The `.viz-link` class is styled in the read-mode HTML skeleton (green pill).
+The `<figcaption>` carries the 🖼️ + demo name (scannable); the borderless `<iframe>` loads the demo inline; the `.viz-open` link is a fallback in case the iframe is ever blocked. `<figure class="viz">` is styled in the read-mode HTML skeleton (caption bar + seamless iframe + fallback link). Only render the `<figure>` for KPs you actually visualise — never add an empty placeholder.
 
 If a chapter has zero visualizations, do NOT add a placeholder — just omit. Silence is correct (it means the concepts didn't warrant it).
 

@@ -23,7 +23,7 @@ That's it. No file scanning, no patching, no HTML editing.
 
 Nothing about existing files. But the AI's behavior for **new** content in this workspace now follows the current skill spec automatically (the skill files themselves are already the latest version):
 
-- New chapter docs → read-mode HTML with six-element concepts + KP list + viz links.
+- New chapter docs → read-mode HTML with six-element concepts + KP list + inline viz embeds.
 - New quizzes → quiz-form HTML with `quizKey` + `restoreData` slot + restore JS + per-question `feedback` slots + `gradingSummary`.
 - New stage-total → web-research-grounded, six types, citations.
 - New stage transitions → stage-handoff (fresh session).

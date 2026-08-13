@@ -116,9 +116,14 @@ VISUALIZATION (optional, per-KP judgment):
   deps, 'use strict' + IIFE, at least one visible interaction (button/slider/click)
   that changes the stage, a reset control, Chinese labels. Follow the html skeleton
   in references/templates.md. Use the render()-from-state pattern.
-- In the chapter doc HTML, link each viz inline at the END of its 核心概念 subsection
-  (after the ⑥对比 element) using this exact format (HTML anchor, not markdown):
-  <a class="viz-link" href="./viz/stageN-chXX-<kp-slug>.html">🖼️ 交互演示：<一句话名> — <用户看到/做到什么></a>
+- In the chapter doc HTML, embed each viz inline at the END of its 核心概念 subsection
+  (after that concept's six-element `<ol class="elements">`) using this exact format
+  (an inline `<iframe>` component, not a link that opens a new tab):
+  <figure class="viz">
+    <figcaption>🖼️ 交互演示：<一句话名></figcaption>
+    <iframe src="./viz/stageN-chXX-<kp-slug>.html" loading="lazy" title="<演示名>"></iframe>
+    <a class="viz-open" href="./viz/stageN-chXX-<kp-slug>.html" target="_blank">在新标签页打开 ↗</a>
+  </figure>
 - DO NOT add viz for KPs that don't warrant it. Zero viz is fine.
 - After writing each html file, SELF-VERIFY before returning (the main agent re-verifies):
   (a) extract the <script> content and confirm no syntax errors;
