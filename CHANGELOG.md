@@ -3,6 +3,14 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.2.0] - 2026-08-13
+
+### 变更
+- **合并自更新进 upgrade**：移除 `/learning-loop update`，其能力（从 GitHub 拉最新 skill + 同步命令）并入 `/learning-loop upgrade`。`upgrade` 现一步完成「拉新版本 skill → 迁移工作区」。
+- **恢复学习命令分支**：`/learning-loop` 重新支持 init（空/主题）、`status`（查进度）、`upgrade`（升级）；frontmatter 恢复 `skills: learning-loop`。
+- README「安装与更新」改为「命令用法」表，列全四个分支。
+- `references/upgrade.md` 顶部注明 upgrade 先拉取最新 skill 再迁移工作区。
+
 ## [1.1.0] - 2026-08-13
 
 ### 新增

@@ -19,7 +19,7 @@
 
 ---
 
-## 安装与更新
+## 安装与命令用法
 
 **安装（一次性）**——把仓库克隆到 ZCode 的 skill 发现位置，并装一次 slash command：
 ```sh
@@ -28,13 +28,18 @@ cp ~/.agents/skills/learning-loop/commands/learning-loop.md ~/.zcode/commands/
 ```
 > Windows 用 Git Bash 或 PowerShell 均可，`~` 会展开到用户主目录。
 
-**更新**——在 ZCode 里输入：
-```
-/learning-loop update
-```
-会自动从 GitHub 拉取最新代码、更新 skill 本体并同步命令自身（底层 = skill 目录 `git pull` + 复制命令文件）。更新后**新开一个会话**以加载最新版本。
+**命令用法**——`/learning-loop` 支持四个分支：
 
-> 学习本身**不需要命令**——直接用自然语言说主题即可（见下方「触发方式」）。`/learning-loop` 命令目前只负责 `update`。
+| 命令 | 行为 |
+|------|------|
+| `/learning-loop` | 自动判断：当前目录有学习工作区→续学；没有→问你学什么 |
+| `/learning-loop <主题>` | 跳过提问，直接以该主题初始化（仍会问目标水平） |
+| `/learning-loop status` | 只读列出当前目录所有学习工作区的进度，不改任何文件 |
+| `/learning-loop upgrade` | **升级**：先从 GitHub 拉取最新 skill（`git pull` + 同步命令自身），再迁移旧工作区（标记后续生成遵循新规范） |
+
+升级后**新开一个会话**以加载最新版本。
+
+> 学习也可以**纯自然语言**触发（见下方「触发方式」），不一定非要用命令。
 
 ---
 

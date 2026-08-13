@@ -1,6 +1,6 @@
 # Upgrade Protocol
 
-Marks an existing workspace so that **subsequently generated content** follows the current skill spec, while **leaving existing files untouched**. Triggered by `/learning-loop upgrade`. Read this when the user runs upgrade.
+`/learning-loop upgrade` does two things: (1) **pulls the latest skill from GitHub** (`git pull` in the install dir + syncs the command file itself), then (2) **migrates workspaces** per this document. This file covers step (2): marking existing workspaces so **subsequently generated content** follows the current skill spec, while **leaving existing files untouched**. Read this when the user runs upgrade.
 
 ## Design principle
 
