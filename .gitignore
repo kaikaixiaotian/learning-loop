@@ -1,0 +1,12 @@
+# IDE
+.idea/
+.vscode/
+
+# ZCode 会话 / 缓存
+.zcode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 运行时工作区（learning-loop 在调用方的当前目录创建 *-learning/ 工作区，不在本仓库内）
