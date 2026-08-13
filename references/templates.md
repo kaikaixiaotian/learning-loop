@@ -463,6 +463,8 @@ Standalone, double-click-to-open, vanilla JS, no external deps. Follow this skel
 
 Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master plan (user reads only, no form). Content structure mirrors the md chapter-doc template (引入/知识点清单/核心概念六要素/🖼️演示/实战/陷阱/小结) — render that content into HTML. Full rules in `references/html-format.md`.
 
+> **⚠️ Provenance rule (load-bearing):** copy this skeleton + `<style>` **fresh from this file** on EVERY generation and EVERY rebuild. NEVER copy the structure/style from an existing sibling `chapters/*.html` — siblings are generated output that may come from an older skill version and will silently propagate a stale skeleton. Every generated chapter MUST carry the `<!-- learning-loop skeleton: read-mode -->` signature in its `<head>`; the main agent greps for it before shipping and regenerates if it's missing.
+
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -470,6 +472,7 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>阶段< N > · 章节< XX > — <title></title>
+<!-- learning-loop skeleton: read-mode -->
 <style>
   /* ===== shared design system (same vars as quiz-form) ===== */
   :root{
@@ -658,6 +661,8 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
 
 Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 提交, answers download as `<slug>-answers.json`. Full rules + submit JS in `references/html-format.md`.
 
+> **⚠️ Provenance rule (load-bearing):** copy this skeleton + `<style>` **fresh from this file** on EVERY generation and EVERY rebuild. NEVER copy the `<style>`/structure from an existing sibling `quizzes/*.html` — siblings may come from an older skill version and propagate a stale visual skeleton (the body/JS contracts are stable, but the CSS is not). Every generated quiz MUST carry the `<!-- learning-loop skeleton: quiz-form -->` signature in its `<head>`; the main agent greps for it before shipping and regenerates if it's missing.
+
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -665,6 +670,7 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>章节测验 — 阶段< N >·章节< XX ></title>
+<!-- learning-loop skeleton: quiz-form -->
 <style>
   /* ===== shared design system (same vars as read-mode chapter) ===== */
   :root{

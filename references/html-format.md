@@ -297,6 +297,7 @@ Reuses the `visualization.md` static-check pattern, extended for forms. The main
    - Read-mode HTML: no form requirements, just that titled sections exist.
 3. **No undefined references:** every `getElementById('x')` / `querySelector('#x')` has a matching `id="x"`.
 4. **Metadata consistency (quiz only):** every `data-qid` appears in the submit JS's collection logic (radios/checkboxes by name, text/textarea by id — confirm the qid matches the control's name/id).
+5. **Skeleton provenance (mandatory gate):** read-mode HTML contains `<!-- learning-loop skeleton: read-mode -->`; quiz HTML contains `<!-- learning-loop skeleton: quiz-form -->`. A missing signature means the file was built by copying an old sibling instead of the current `references/templates.md` — regenerate from the template before shipping.
 
 A failing check → do NOT ship. Re-dispatch to fix, or **degrade to markdown** (see below).
 

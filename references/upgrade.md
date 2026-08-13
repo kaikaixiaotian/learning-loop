@@ -21,7 +21,7 @@ That's it. No file scanning, no patching, no HTML editing.
 
 ## What changes after upgrade
 
-Nothing about existing files. But the AI's behavior for **new** content in this workspace now follows the current skill spec automatically (the skill files themselves are already the latest version):
+Nothing about existing files. But the AI's behavior for **new** content in this workspace now follows the current skill spec automatically (the skill files themselves are already the latest version) — and this is now **enforced, not just promised**: every generated chapter/quiz must carry a `<!-- learning-loop skeleton: ... -->` signature that the main agent greps for before shipping, so new content can no longer silently inherit an old sibling's visual skeleton:
 
 - New chapter docs → read-mode HTML with six-element concepts + KP list + inline viz embeds.
 - New quizzes → quiz-form HTML with `quizKey` + `restoreData` slot + restore JS + per-question `feedback` slots + `gradingSummary`.

@@ -134,6 +134,11 @@ VISUALIZATION (optional, per-KP judgment):
       for viz: the controls; for read-mode: titled sections;
   (d) for the quiz: every <fieldset data-qid="qN"> has a form control whose
       name (radio/checkbox) or id (text/textarea) equals "qN".
+  (e) skeleton provenance: the chapter doc contains
+      `<!-- learning-loop skeleton: read-mode -->` and the quiz contains
+      `<!-- learning-loop skeleton: quiz-form -->`. If missing, you copied a
+      sibling's stale skeleton — rebuild the skeleton fresh from
+      references/templates.md before returning.
 
 QUIZ HTML RULES (the quiz is now a form, not md — see references/html-format.md):
 - Use the quiz-form html skeleton from references/templates.md verbatim structure.

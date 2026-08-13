@@ -3,6 +3,13 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.1] - 2026-08-13
+
+### 修复
+- **修复"骨架不随 skill 更新"的根因**：生成/重建章节与测验时，AI 会从已有兄弟文件复制旧骨架、而非读取最新模板（真实案例：1.3.0 升级后生成的 stage2 章节仍是旧骨架）。现强制：每次生成与每次重建都必须从当前 `references/templates.md` 取骨架 + `<style>`，**禁止**从兄弟 `chapters/*.html` / `quizzes/*.html` 复制结构或样式。
+- **骨架签名 + 交付前静态校验**：模板 `<head>` 埋 `<!-- learning-loop skeleton: read-mode|quiz-form -->` 签名；交付任何章节/测验前必须 grep 该签名，缺失 = 抄了旧兄弟 = 立即按模板重生成（复用已验证的 viz 校验模式）。
+- 该规则写入 `SKILL.md`（生成 / rebuild / verify 三处）、`templates.md`（两骨架顶部）、`html-format.md`、`subagent-protocol.md`、`upgrade.md`。
+
 ## [1.3.0] - 2026-08-13
 
 ### 变更
