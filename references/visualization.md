@@ -1,115 +1,98 @@
 # Visualization Protocol
 
-The learning-loop skill can generate **interactive HTML visualizations** for concepts that benefit from them. This file defines *when* to visualize, *how* to embed, and *how to verify* the HTML actually works. Read before any chapter that might warrant a visualization, and before dispatching a visualization-generating subagent.
+The learning-loop skill generates **interactive HTML visualizations** for concepts. As of spec 2.0, visualizations are **the primary vehicle for intuition — the analogy-based 直觉解释 element has been removed**. This file defines *when* to visualize (default: always, with narrow waivers), *what makes a demo a "真正的演示"*, *how to embed*, and *how to verify* the HTML actually works. Read before any chapter generation.
 
-## Why visualize at all
+## Why demos replaced analogies
 
-Some concepts are inherently spatial, temporal, or stateful — words undersell them. A state machine drawn as clickable nodes; a sorting algorithm stepped through; a git three-area model showing files flowing between zones. For these, an interactive demo teaches in 30 seconds what paragraphs cannot. But not every concept benefits — forcing a visualization onto a definition-heavy concept adds noise. So the decision is **per-KP, with a judgment rule**.
+An analogy ("引用像遥控器"、"对象在堆像家具在仓库") is invisible and non-operable — the user cannot watch it happen, cannot poke it, and cannot see where it breaks. That is a recurring source of 理解偏差. A demo shows the **mechanism itself**: the stack frames, the heap objects, the copies being made, the state changing step by step. The user can operate it and verify each 考点断言 with their own eyes. Intuition is built by manipulation, not by metaphor.
 
-## When to visualize — the judgment rule
+**Prose rule:** the chapter doc must not use analogy phrasing anywhere ("像 X"、"好比 Y"、"可以把它想象成 Z"). Restate mechanisms in plain technical language; let the demo carry the intuition.
 
-For each KP in a chapter, the planner subagent evaluates it against these signals. **Visualize if ≥2 signals fire.** Do not visualize if 0–1 fire (the prose + six-element explanation is enough; a forced viz wastes effort and distracts).
+## When to visualize — default ON, waiver only
 
-| Signal | Meaning | Example |
-|--------|---------|---------|
-| **Stateful / multi-step** | The concept involves transitions over time or steps | HTTP cache fresh→stale→revalidate; Promise pending→fulfilled |
-| **Spatial / structural** | Relationships between parts matter (trees, graphs, layers) | DOM tree; git object graph (blob→tree→commit) |
-| **Data-flow** | Things move between zones/actors | request→cache→origin; working tree→index→repo |
-| **Parameter-sensitive** | Behavior changes visibly as an input changes | `max-age` slider changing freshness; recursion depth |
-| **Counter-intuitive when static** | Reading it wrong is easy until you see it move | event loop; backpressure |
-| **Algorithmic** | A procedure with discrete steps | merge sort passes; BFS queue evolution |
+**Every 核心概念 (KP) gets an interactive demo by default.** Expect 5–8 demos in a typical chapter. A KP may be waived ONLY if it is pure recall with nothing to operate or observe (e.g. "记住 char 的默认值是 '\u0000'" with no state, no flow, no visible behavior). Waivers must be explicit and reasoned in the `visualization_decisions` block — silence is NOT a valid waiver. If you find yourself waiving most KPs, you are under-building: find the mechanism angle (a memory grid filling with defaults IS demonstrable).
 
-Counter-examples (do NOT visualize): pure definitions ("什么是闭包"的一句话定义), syntax memorization, historical context, philosophical distinctions. If the concept is "remember this term means X", prose wins.
+The old signal table (≥2 signals → visualize, 0–3 per chapter) is **retired as a gate**. It survives only as a **demo-type selector** — pick the interaction pattern that fits the concept:
 
-The planner records its decision per KP in a `visualization_decisions` block (see `references/subagent-protocol.md`):
+| Concept shape | Demo pattern | Example |
+|--------|---------|------|
+| Stateful / multi-step | stepper: 下一步/上一步/重置 walking through states | 初始化顺序逐条执行；Promise pending→fulfilled |
+| Spatial / structural | draggable/clickable structure map with highlighting | 栈帧+堆对象+引用箭头；DOM tree |
+| Data-flow | animated pipeline where items move between zones on step | 实参→形参复制；git 三区流动 |
+| Parameter-sensitive | slider/select that changes the outcome visibly | max-age 改新鲜期；递归深度 |
+| Counter-intuitive when static | step + before/after diff view | 短路求值跳过的副作用；event loop |
 
 ```
 visualization_decisions:
-  KP1 (cache definition): skip — 0 signals (pure definition)
-  KP2 (max-age): visualize — signals: parameter-sensitive, stateful
-  KP3 (强制缓存流程): visualize — signals: data-flow, multi-step, counter-intuitive
-  KP4 (no-cache vs no-store): skip — 1 signal (contrast); prose + table is clearer
+  KP1 (类与对象/引用): demo — pattern: structure-map (栈/堆/引用箭头, 可加对象/可断引用)
+  KP2 (默认值): demo — pattern: stepper (内存槽逐个填默认值)
+  KP3 (语法声明位置): waive — 纯语法记忆，无状态流转与可观察行为
+  KP4 (值传递): demo — pattern: data-flow + stepper (复制/改字段/重赋值三分支)
 ```
 
-A chapter typically warrants 0–3 visualizations. Zero is fine — do not manufacture one to "look complete".
+## What makes a "真正的演示" (hard quality bar)
+
+A demo that only draws a concept diagram or decorates a definition is NOT a demo — it recreates exactly the analogy problem in graphical form. Every demo MUST:
+
+1. **Show the mechanism itself, operable.** The real entities of the concept (变量槽 / 栈帧 / 堆对象 / 引用箭头 / 缓存条目 / 指针) are drawn explicitly, and executing steps changes their visible state (color/position/value). No metaphor drawings, no static architecture charts.
+2. **Cover the key branches — including a boundary case.** The demo's scenario set must include at least one case from the concept's ⑤边界条件 (e.g. a pass-by-value demo must let the user try the "对形参重新赋值 → 实参不变" branch, not only the happy path). Map each scenario to the 考点断言 it verifies and say so in the 观察要点.
+3. **Let the user try their own hand.** Where feasible, offer a control that changes the outcome (choose scenario / edit a value / pick a branch), so the user can test predictions — not just watch a fixed replay.
+4. **Minimum interaction floor:** a 下一步 (step) control, a 重置 control, and visible state change per step. Pure static SVG with no controls does not count — skip the viz entirely rather than shipping a static picture.
+5. **Tech constraints (unchanged):** single `.html`, all CSS/JS inline, no external deps/CDN, vanilla JS, `'use strict'` + IIFE, Chinese labels matching chapter terminology, `render()`-from-state pattern, and the `reportHeight()` auto-height postMessage snippet kept verbatim (it lets the parent chapter resize the iframe — never hard-set a tiny height).
 
 ## How to embed in the chapter doc
 
-The chapter doc is now itself an HTML file (read-mode, per `references/html-format.md`), so each visualization is **embedded inline** as a component via an `<iframe>` — not a link that opens a new tab. The visualization is still saved as a standalone `.html` file: it opens fine on its own AND is loaded into the chapter page, so the user interacts with it in-place while reading.
+The demo lives in the concept's **② 直观演示** element slot (inside the six-element `<ol class="elements">`), so the user reaches it at the exact moment of learning that concept — not as an appendix after ⑥. The skeleton CSS makes the figure break out to the card's full width inside the slot.
 
-**File location:** `<workspace>/chapters/viz/stageN-chXX-<kp-slug>.html` (one file per visualized KP; `viz/` subfolder keeps them organized). The file remains double-click-openable and reusable; the iframe just loads it inline.
-
-**Embed format in the chapter doc HTML** — place the `<figure class="viz">` inline within the relevant 核心概念 subsection, right after that concept's six-element `<ol class="elements">`, so the user reaches it at the moment of learning that concept:
+**File location:** `<workspace>/chapters/viz/stageN-chXX-<kp-slug>.html` (one file per demoed KP; `viz/` subfolder keeps them organized). The file remains double-click-openable and reusable; the iframe loads it inline.
 
 ```html
-<h3>2. max-age 相对新鲜期</h3>
-<ol class="elements">
-  <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
-  …
-  <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">…</div></li>
-</ol>
-<figure class="viz">
-  <figcaption>🖼️ 交互演示：max-age 新鲜期滑块</figcaption>
-  <iframe src="./viz/stage1-ch01-max-age.html" loading="lazy" title="max-age 新鲜期滑块演示"></iframe>
-  <a class="viz-open" href="./viz/stage1-ch01-max-age.html" target="_blank">在新标签页打开 ↗</a>
-</figure>
+<li><span class="el-label">② 直观演示</span><div class="el-body">
+  <figure class="viz">
+    <figcaption>🖼️ 交互演示：<机制名></figcaption>
+    <iframe src="./viz/stageN-chXX-<kp-slug>.html" loading="lazy" title="<演示名>"></iframe>
+    <a class="viz-open" href="./viz/stageN-chXX-<kp-slug>.html" target="_blank">在新标签页打开 ↗</a>
+  </figure>
+  <ul class="observe">
+    <li><点什么：操作哪个控件></li>
+    <li><看什么：哪个状态如何变化></li>
+    <li><验证哪条断言（KPx·Ay）></li>
+  </ul>
+</div></li>
 ```
 
-The `<figcaption>` carries the 🖼️ + demo name (scannable); the borderless `<iframe>` loads the demo inline; the `.viz-open` link is a fallback in case the iframe is ever blocked. `<figure class="viz">` is styled in the read-mode HTML skeleton (caption bar + seamless iframe + fallback link). Only render the `<figure>` for KPs you actually visualise — never add an empty placeholder.
+观察要点 (observe list) is mandatory whenever a demo exists: 2–3 items phrased as actions ("把 b 的赋值方式切到『重赋值』，点下一步，观察 main 里 s 指向的对象内容没变"). For waived KPs, the ② slot states the waiver and its reason ("演示豁免：纯记忆型，无状态流转") — no empty figure, no placeholder.
 
-If a chapter has zero visualizations, do NOT add a placeholder — just omit. Silence is correct (it means the concepts didn't warrant it).
+## Quality verification (JS 静态检查 — unchanged flow)
 
-## Interaction requirements (per user's confirmed choice: 可交互演示)
+The main agent **must verify** every generated HTML before handing the chapter to the user. A demo that errors on open is worse than none. Verification is static, not a browser run:
 
-Visualizations must be **genuinely interactive**, not static diagrams. Minimum bar:
+1. **Syntax check:** extract the `<script>` content, run `node --check`. A syntax error means the file is broken — reject and regenerate.
+2. **Element existence check:** the skeleton's required controls exist (`下一步`/step button id, `重置` id; slider/select ids if the pattern uses them).
+3. **No undefined references:** every `getElementById('x')` has a matching `id="x"`; called functions are defined in the script.
+4. **`reportHeight()` present:** grep for `__vizHeight` — its absence means the iframe will be clipped at default height in the chapter page.
+5. **Interaction floor:** at least one button that mutates state and calls `render()`; a reset control.
 
-- At least one of: button (step/play/reset), slider (parameter), or click (highlight node / reveal). A pure static SVG with no controls does NOT count — that's a static diagram, skip the viz and use prose instead.
-- State changes must be **visible** (color/position/size change), not just logged to console.
-- Self-contained: single `.html` file, all CSS/JS inline, no external dependencies (no CDN — the user may open it offline). Vanilla JS or inline `<script>` only.
-- Clear labels in Chinese matching the chapter's terminology.
-- A "重置" (reset) control so the user can replay.
-- **Auto-height:** keep the `reportHeight()` postMessage snippet from the skeleton (it reports the page's real height to the parent chapter, which resizes the iframe to fit). This is what stops the demo from being clipped at a fixed height — do not remove it.
+If any check fails: **do not hand the broken viz to the user.** Either (a) re-dispatch the subagent with the specific failure, or (b) drop the demo for that KP and fill the ② slot with a reasoned waiver + a prose mechanism walkthrough (no analogy). Never ship a viz that errors on open.
 
-Encouraged but not required: play/pause for animations, step counters, before/after state comparison.
-
-**Tech constraints:** Vanilla HTML/CSS/JS only. No frameworks (React/Vue), no build step, no npm. Use `<canvas>` or SVG or styled `<div>`s as fits the concept. File should open by double-click — zero setup.
-
-## Quality verification (per user's confirmed choice: JS 静态检查)
-
-The main agent **must verify** every generated HTML before handing the chapter to the user. Visualizations that don't render or have JS errors are worse than no visualization — they erode trust. Verification is a fast static check, not a full browser run:
-
-**Run this check after the planner subagent returns a viz file:**
-
-1. **Syntax check:** extract the `<script>` content and run it through Node's parser to confirm no syntax errors:
-   ```bash
-   node --check <extracted-script.js>
-   ```
-   Or use `node -e` with the script wrapped. A syntax error here means the file is broken — reject and have the subagent regenerate.
-
-2. **Element existence check:** grep the HTML for the controls the concept requires — if it's a slider viz, `<input type="range">` must exist; if it's a step viz, the step button's id must exist. Missing required elements = incomplete viz.
-
-3. **No undefined references:** grep for common bug patterns — `getElementById('x')` where `x` isn't in the HTML; function calls to functions not defined in the script.
-
-If any check fails: **do not hand the broken viz to the user.** Either (a) re-dispatch the subagent with the specific failure pointed out, or (b) drop the visualization for that KP and replace the link in the chapter doc with a prose note ("本概念建议自行画状态图理解"). Never ship a viz that errors on open.
-
-If all checks pass: the viz is good. The link stays in the chapter doc.
-
-**Why not browser-screenshot verification (the option not chosen):** it's heavier and slower for every chapter; static checks catch the vast majority of "won't render" failures (syntax errors, missing elements) at a fraction of the cost. Visual/layout issues that slip through static checks are acceptable — the user will report them and we fix.
+**Why not browser-screenshot verification:** heavier and slower per chapter; static checks catch the vast majority of "won't render" failures at a fraction of the cost. Visual issues that slip through get reported and fixed.
 
 ## What the visualization subagent returns
 
-The planner subagent generates the HTML directly (it's the same agent that knows the concept). It returns, per visualized KP:
+The planner subagent generates the HTML directly (it's the same agent that knows the concept). It returns, per KP:
 
 ```
 visualization_decisions:
-  <per-KP decision block as above>
+  <per-KP decision block as above — every KP appears, demo or reasoned waiver>
 
 viz_files_written:
   - path: <abs path>/chapters/viz/stageN-chXX-<kp-slug>.html
     kp: KP3
-    concept: 强制缓存流程
-    interaction: step buttons (next/prev/reset) + auto-play
-    verified: <true|false — set true ONLY if the subagent self-ran the static checks; main agent re-verifies anyway>
+    concept: 值传递与引用语义
+    pattern: data-flow + stepper
+    branches_covered: 改字段生效 / 重赋值无效 / swap 反证（对应 KP3-A2, KP3-A3, KP3-A5）
+    interaction: scenario select + step buttons + reset
+    verified: <true|false — true ONLY if the subagent self-ran the static checks; main agent re-verifies anyway>
 ```
 
-The main agent then runs the verification itself (don't trust the subagent's self-check alone) and either keeps or drops each viz.
+The main agent then runs the verification itself (don't trust the subagent's self-check alone) and either keeps or drops each viz. Note `branches_covered` — it is how the main agent spot-checks quality bar #2 (boundary-case coverage) without opening a browser.

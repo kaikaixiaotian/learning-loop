@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阶段< N > · 章节< XX > — <title></title>
+<!-- learning-loop skeleton: read-mode -->
+<style>
+  /* ===== shared design system (same vars as quiz-form) ===== */
+  :root{
+    --bg:#ffffff; --surface:#f7f8fa; --surface-2:#eef0f3;
+    --text:#1f2328; --muted:#57606a; --faint:#8b949e;
+    --accent:#4f46e5; --accent-soft:#eef2ff; --accent-border:#c7d2fe;
+    --border:#d9dde3; --hairline:#eceef1; --code-bg:#f6f8fa;
+    --obj-bg:#eef2ff;  --obj-bd:#4f46e5;
+    --kp-bg:#fffbeb;   --kp-bd:#fcd34d;  --kp-text:#92580a;
+    --pit-bg:#fff7ed;  --pit-bd:#fb923c; --pit-text:#9a3412;
+    --sum-bg:#f5f3ff;  --sum-bd:#a78bfa; --sum-text:#5b21b6;
+    --r-sm:8px; --r:12px; --r-lg:16px;
+    --shadow-sm:0 1px 2px rgba(31,35,40,.06); --shadow:0 6px 20px rgba(31,35,40,.08);
+    --maxw:760px;
+    --font-sans:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    --font-mono:"SFMono-Regular",ui-monospace,"Cascadia Code",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0d1117; --surface:#161b22; --surface-2:#21262d;
+    --text:#e6edf3; --muted:#9198a1; --faint:#6e7681;
+    --accent:#818cf8; --accent-soft:#1e1b4b; --accent-border:#4338ca;
+    --border:#30363d; --hairline:#21262d; --code-bg:#161b22;
+    --obj-bg:#1e1b4b; --kp-bg:#3b2f10; --kp-bd:#a16207; --kp-text:#fde68a;
+    --pit-bg:#3b1d10; --pit-bd:#c2410c; --pit-text:#fed7aa;
+    --sum-bg:#2e1065; --sum-bd:#7c3aed; --sum-text:#ddd6fe;
+    --shadow:0 6px 24px rgba(0,0,0,.5);
+  }}
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--font-sans); background:var(--bg); color:var(--text); line-height:1.75; margin:0; -webkit-font-smoothing:antialiased;}
+  .page{display:flex; gap:48px; max-width:1080px; margin:0 auto; padding:40px 24px 96px;}
+
+  /* sticky table of contents (CSS-only) */
+  aside.toc{position:sticky; top:40px; align-self:flex-start; width:188px; flex:0 0 188px; font-size:.82rem; color:var(--muted);}
+  aside.toc .toc-title{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:0 0 10px 14px;}
+  aside.toc nav{display:flex; flex-direction:column; gap:2px; border-left:1px solid var(--hairline);}
+  aside.toc a{display:block; padding:6px 14px; color:var(--muted); text-decoration:none; border-left:2px solid transparent; margin-left:-1px; transition:.15s;}
+  aside.toc a:hover{color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft);}
+
+  article.content{max-width:var(--maxw); width:100%; min-width:0;}
+  .eyebrow{font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  h1{font-size:1.85rem; line-height:1.3; margin:0 0 12px; letter-spacing:-.01em;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px;}
+  .meta .chip{font-size:.78rem; color:var(--muted); background:var(--surface); border:1px solid var(--border); padding:4px 10px; border-radius:999px;}
+
+  h2{font-size:1.3rem; margin:44px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--hairline); display:flex; align-items:baseline; gap:12px;}
+  h2 .nh{color:var(--accent); font-size:.95rem; font-weight:700;}
+  h3{font-size:1.12rem; margin:32px 0 10px; color:var(--text);}
+  p{margin:0 0 14px;}
+
+  /* callout cards */
+  .callout{border-radius:var(--r); padding:16px 18px; margin:16px 0; border:1px solid var(--border); background:var(--surface); border-left:4px solid var(--accent);}
+  .callout .ct{font-weight:700; margin-bottom:6px;}
+  .objectives{background:var(--obj-bg); border-color:var(--obj-bd);} .objectives .ct{color:var(--obj-bd);}
+  .objectives ul,.summary ul{margin:6px 0 0; padding-left:20px;}
+  .kp{background:var(--kp-bg); border-color:var(--kp-bd);} .kp .ct{color:var(--kp-text);}
+  .kp .hint{font-size:.82rem; color:var(--muted); margin:2px 0 10px;}
+  .kp .kp-tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .kp .kp-tags span{font-size:.82rem; background:var(--bg); border:1px solid var(--kp-bd); color:var(--kp-text); padding:4px 11px; border-radius:999px;}
+  .pitfall{background:var(--pit-bg); border-color:var(--pit-bd); margin:10px 0;} .pitfall .ct{color:var(--pit-text);}
+  .summary{background:var(--sum-bg); border-color:var(--sum-bd); margin-top:32px;} .summary .ct{color:var(--sum-text);}
+  .summary .self{font-size:.88rem; color:var(--muted); margin-top:10px;}
+
+  /* the six-element list — turns the wall-of-text into a scannable definition list */
+  ol.elements{list-style:none; margin:10px 0 0; padding:0; border:1px solid var(--hairline); border-radius:var(--r); overflow:hidden;}
+  ol.elements > li{display:grid; grid-template-columns:148px 1fr; gap:6px 18px; padding:14px 18px; border-top:1px solid var(--hairline);}
+  ol.elements > li:first-child{border-top:none;}
+  ol.elements .el-label{font-weight:700; font-size:.85rem; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-border); padding:4px 10px; border-radius:var(--r-sm); height:fit-content; white-space:nowrap;}
+  ol.elements .el-body{min-width:0;} ol.elements .el-body p{margin:0 0 8px;} ol.elements .el-body p:last-child{margin-bottom:0;}
+
+  /* element-body micro-formatting (anti wall-of-text): sub-lists & comparison tables */
+  ol.elements .el-body ul, ol.elements .el-body ol{margin:6px 0 2px; padding-left:22px;}
+  ol.elements .el-body ul li, ol.elements .el-body ol li{margin:5px 0;}
+  ol.elements .el-body table{border-collapse:collapse; width:100%; margin:8px 0 2px; font-size:.92rem;}
+  ol.elements .el-body th, ol.elements .el-body td{border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top;}
+  ol.elements .el-body thead th{background:var(--surface-2); font-size:.85rem;}
+  ol.elements .el-body tbody tr:nth-child(even){background:var(--surface);}
+  /* ② slot: the embedded demo breaks out to the card's full width (label col 148px + 18px gap) */
+  ol.elements .el-body figure.viz{margin:10px 0 4px -166px; width:calc(100% + 166px); max-width:calc(100% + 166px);}
+  /* observe-points list under the ② demo */
+  ul.observe{margin:8px 0 0; padding-left:0; list-style:none; color:var(--muted); font-size:.92rem;}
+  ul.observe li{margin:3px 0; padding-left:26px; position:relative;}
+  ul.observe li::before{content:"👀"; position:absolute; left:0;}
+
+  /* checkpoint (non-graded self-test) after each concept — details/summary, zero JS */
+  section.checkpoint{border:1px dashed var(--accent-border); background:var(--accent-soft); border-radius:var(--r); padding:14px 18px; margin:14px 0 28px;}
+  section.checkpoint .cp-title{font-weight:700; color:var(--accent); font-size:.92rem; margin-bottom:6px;}
+  section.checkpoint details{background:var(--bg); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:8px 14px; margin:8px 0;}
+  section.checkpoint summary{cursor:pointer; font-weight:600; font-size:.95rem;}
+  section.checkpoint summary:hover{color:var(--accent);}
+  section.checkpoint details .ans{margin-top:8px; padding-top:8px; border-top:1px dashed var(--hairline); color:var(--muted); font-size:.9rem;}
+
+  /* study-route pill under the meta chips */
+  .study-route{display:inline-block; font-size:.88rem; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 16px; margin:0 0 28px;}
+
+  /* assertion inventory inside the KP callout */
+  .kp .kp-asserts{list-style:none; margin:10px 0 0; padding:10px 0 0 2px; border-top:1px dashed var(--kp-bd); font-size:.84rem; color:var(--kp-text);}
+  .kp .kp-asserts li{margin:3px 0;}
+  .kp .kp-asserts li strong{margin-right:4px;}
+
+  /* embedded visualization component (loaded inline in the ② slot) */
+  figure.viz{margin:18px 0 6px; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow-sm); background:var(--surface);}
+  figure.viz figcaption{display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:.9rem;}
+  figure.viz iframe{display:block; width:100%; height:460px; border:0; background:var(--bg);} /* 默认高度；页面脚本会按演示实际高度自适应，避免裁切 */
+  figure.viz .viz-open{display:block; padding:8px 14px; font-size:.78rem; color:var(--muted); border-top:1px solid var(--hairline); text-decoration:none; background:var(--bg);}
+  figure.viz .viz-open:hover{color:var(--accent);}
+
+  pre{background:var(--code-bg); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:14px 16px; overflow-x:auto; margin:12px 0;}
+  code{font-family:var(--font-mono); font-size:.88em;} pre code{font-size:.85rem;}
+  :not(pre)>code{background:var(--surface-2); padding:2px 6px; border-radius:5px;}
+  .footer-note{margin-top:40px; padding-top:18px; border-top:1px solid var(--hairline); color:var(--muted); font-size:.92rem;}
+
+  /* 补讲（超纲/补充教学）样式 */
+  [id]{scroll-margin-top:24px;}
+  .backfill-badge{display:inline-block; font-size:.68rem; font-weight:700; letter-spacing:.04em; color:#fff; background:#f59e0b; padding:2px 8px; border-radius:999px; vertical-align:middle; margin-left:8px;}
+  .backfill-meta{font-size:.82rem; color:var(--muted); margin:2px 0 10px;}
+  aside.toc .toc-sub{font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:16px 0 6px 14px;}
+  aside.toc a[href^="#backfill-"]::before{content:"＋ "; color:#f59e0b; font-weight:700;}
+  @media (max-width:900px){.page{display:block; padding:24px 16px 80px;} aside.toc{display:none;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc">
+    <p class="toc-title">本章目录</p>
+    <nav>
+      <a href="#sec-obj">学习目标</a>
+      <a href="#sec-intro">引入</a>
+      <a href="#sec-kp">知识点清单</a>
+      <a href="#sec-core">核心概念</a>
+      <a href="#sec-practice">实战演示</a>
+      <a href="#sec-pit">常见陷阱</a>
+      <a href="#sec-summary">小结自查</a>
+    </nav>
+  </aside>
+
+  <article class="content">
+    <div class="eyebrow">阶段 2 · 章节 1（规范 2.0 预览）</div>
+    <h1>类与对象 — 概念 6：值传递与引用语义</h1>
+    <div class="meta">
+      <span class="chip">版本 v1（新规范示例）</span>
+      <span class="chip">前置：KP1 引用与对象</span>
+      <span class="chip">预计 25min</span>
+    </div>
+    <p class="study-route">🧭 学习路线：通读 → 每个概念：操作②的演示 + 做检查点 → 答错回看对应要素 → 全部通过后再开测验</p>
+
+    <section id="sec-obj" class="callout objectives">
+      <div class="ct">🎯 本概念目标</div>
+      <div>学完后你应当能——</div>
+      <ul><li>用「值传递」机制逐步解释任意一段传参代码的输出</li><li>说清为什么改字段可见、重新赋值不可见、swap 失败</li></ul>
+    </section>
+
+    <h2 id="sec-intro"><span class="nh">01</span> 引入</h2>
+    <p>下面这段代码输出什么？先猜，再往下学，最后在②的演示里验证：<code class="lang-java">static void f(StringBuilder sb){ sb.append("!"); sb = new StringBuilder("x"); }</code> 调用 <code>f(s)</code> 后，<code>s</code> 的内容变了吗？两个操作一个生效一个不生效——差异不在写法，在机制。</p>
+
+    <section id="sec-kp" class="callout kp">
+      <div class="ct">📋 知识点清单（节选 · 本章覆盖度基准 + 考点断言）</div>
+      <div class="hint">测验出题范围的唯一基准。每题考点必须映射到具体断言（Ax）；映射不到 = 超纲。</div>
+      <div class="kp-tags">
+        <span><strong>KP6</strong> · 值传递与引用语义</span>
+      </div>
+      <ul class="kp-asserts">
+        <li><strong>KP6·A1</strong> Java 实参→形参绑定只有值传递：调用时复制「值」本身</li>
+        <li><strong>KP6·A2</strong> 基本类型复制数值：方法内改形参不影响实参</li>
+        <li><strong>KP6·A3</strong> 引用类型复制地址副本：通过形参改对象字段对外可见</li>
+        <li><strong>KP6·A4</strong> 对形参重新赋值（= null / = new / = 别的对象）只改副本，实参不变</li>
+        <li><strong>KP6·A5</strong> swap 交换两个引用不生效——Java 非引用传递的反证</li>
+      </ul>
+    </section>
+
+    <h2 id="sec-core"><span class="nh">02</span> 核心概念</h2>
+
+    <h3>6. 值传递与引用语义（KP6）</h3>
+    <ol class="elements">
+      <li><span class="el-label">① 精确定义</span><div class="el-body">
+        <ul>
+          <li><strong>总规则</strong>：Java 的实参→形参绑定只有<strong>值传递</strong>——调用方法时，实参的值被复制一份给形参。</li>
+          <li><strong>基本类型</strong>：复制的是数值本身。方法内改形参，实参不变。</li>
+          <li><strong>引用类型</strong>：复制的是<strong>引用值（地址）的副本</strong>。形参与实参指向同一个堆对象。</li>
+          <li><strong>引用传递（对照）</strong>：指「形参是实参的别名」。Java 不具备这种能力。</li>
+        </ul>
+      </div></li>
+      <li><span class="el-label">② 直观演示</span><div class="el-body">
+        <figure class="viz">
+          <figcaption>🖼️ 交互演示：值传递三分支——改字段 / 重赋值 / swap</figcaption>
+          <iframe src="./viz-pass-by-value.html" loading="lazy" title="值传递机制演示"></iframe>
+          <a class="viz-open" href="./viz-pass-by-value.html" target="_blank">在新标签页打开 ↗</a>
+        </figure>
+        <ul class="observe">
+          <li>把场景切到「② sb = new …」，连点两次下一步：看堆上出现新对象 O2 后，f 栈帧的 sb 改指 O2，而 main 的 s 仍指向 O1。</li>
+          <li>再切到「① sb.append()」走到最后一步：对比两种场景结束时 main 读到的内容。</li>
+          <li>用「③ swap」验证 KP6·A5：交换的只是 f 栈帧里的两个副本槽。</li>
+        </ul>
+      </div></li>
+      <li><span class="el-label">③ 最小例子</span><div class="el-body">
+        <pre><code>static void f(int n, StringBuilder sb) {
+    n = 999;                              // 改副本：无效
+    sb.append("!");                       // 沿副本找到同一对象：有效
+    sb = new StringBuilder("新对象");     // 重赋值副本：无效
+}
+int a = 1;
+StringBuilder s = new StringBuilder("hi");
+f(a, s);
+System.out.println(a + " " + s);          // 输出：1 hi!</code></pre>
+      </div></li>
+      <li><span class="el-label">④ 推导或代码</span><div class="el-body">
+        <ol>
+          <li>调用 f 时，JVM 为 f 新建栈帧：n ← a 的副本（1）；sb ← s 的副本（同一地址）。</li>
+          <li><code>n = 999</code> 只改 f 栈帧的 n 槽，main 的 a 不动。</li>
+          <li><code>sb.append("!")</code> 沿地址找到堆上唯一对象，内容变 "hi!"。</li>
+          <li><code>sb = new …</code> 让 f 栈帧的 sb 改指新对象——main 的 s 仍指旧对象。</li>
+          <li>f 返回、栈帧销毁：a=1，s→"hi!"。变的永远是「参数指向的对象」，不是「实参手里的引用」。</li>
+        </ol>
+      </div></li>
+      <li><span class="el-label">⑤ 边界条件</span><div class="el-body">
+        <ul>
+          <li><strong>swap 反证</strong>：<code>swap(引用,引用)</code> → 交换不生效。原因：交换的是两份地址副本，实参引用未被改写。</li>
+          <li><strong>数组同理</strong>：<code>arr[0] = 9</code> → 生效；<code>arr = new int[3]</code> → 无效。原因：数组变量也是引用，规则与对象完全一致。</li>
+          <li><strong>传 null</strong>：形参拿到 null 副本，方法内 <code>p = new …</code> → 实参仍为 null。原因：重赋值只作用于副本。</li>
+          <li><strong>String 的错觉</strong>：传 String「改不了」→ 并非传值方式特殊。原因：String 不可变，任何"修改"都是创建新对象+重赋值。</li>
+        </ul>
+      </div></li>
+      <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">
+        <table>
+          <thead><tr><th>维度</th><th>值传递（Java）</th><th>引用传递（C++ &amp;、C# ref）</th></tr></thead>
+          <tbody>
+            <tr><td>形参是什么</td><td>实参值的<strong>副本</strong></td><td>实参的<strong>别名</strong></td></tr>
+            <tr><td>对形参重新赋值</td><td>实参不变（只改副本）</td><td>实参跟着变（同一存储）</td></tr>
+            <tr><td>改指向对象的内容</td><td>可见（副本指向同一对象）</td><td>可见</td></tr>
+            <tr><td>swap 能否实现</td><td>不能（反证）</td><td>能</td></tr>
+          </tbody>
+        </table>
+      </div></li>
+    </ol>
+
+    <section class="checkpoint">
+      <div class="cp-title">🧪 检查点 · KP6（非计分，做完再往下）</div>
+      <details>
+        <summary>Q1（预测）：<code>static void g(StringBuilder b){ b = b.append("!"); }</code> 调用 <code>g(s)</code> 后 s 的内容？先预测，再到上面演示的场景①里走一遍验证。</summary>
+        <div class="ans">"hi!"。append 返回的是同一个对象（链式调用），b 指向没变；改的是堆上对象本身 → 对外可见。验证：演示场景①第 3 步。见 KP6·A3。</div>
+      </details>
+      <details>
+        <summary>Q2（判断+说理由）：「方法里改了对象外面能看到，说明 Java 对象是引用传递。」这个说法对吗？</summary>
+        <div class="ans">错。改字段可见只是「副本引用指向同一对象」的推论；判断依据是重新赋值和 swap 是否影响实参——它们都不影响，所以是值传递。见 KP6·A4 / A5。</div>
+      </details>
+      <details>
+        <summary>Q3（填关键值）：<code>void h(int[] a){ a = new int[]{7}; }</code> 调用后，外部数组的第 0 个元素是原来的值还是 7？_____</summary>
+        <div class="ans">原来的值。重赋值只改形参副本（KP6·A4）；若写 <code>a[0] = 7</code> 才会生效（KP6·A3）。</div>
+      </details>
+    </section>
+
+    <h2 id="sec-practice"><span class="nh">03</span> 实战演示</h2>
+    <p>（本章完整版此处为端到端可复现例子——预览页从略。）</p>
+
+    <h2 id="sec-pit"><span class="nh">04</span> 常见陷阱 &amp; 易错点</h2>
+    <div class="callout pitfall">
+      <div class="ct">⚠️ 陷阱 1（关联 KP6·A4）</div>
+      <div>把「改字段生效」当成引用传递的证据——错。生效的原因是副本指向同一对象。</div>
+    </div>
+
+    <section id="sec-summary" class="callout summary">
+      <div class="ct">✅ 小结 &amp; 自查</div>
+      <ul>
+        <li>值传递 = 复制；引用传递 = 别名。Java 只有前者。</li>
+        <li>判据三连：改字段可见？重赋值可见？swap 成功？</li>
+      </ul>
+      <div class="self">自查：上面 5 条断言你都能独立复述或演示吗？答不上来的回看对应要素、重玩演示。</div>
+    </section>
+
+    <p class="footer-note">所有检查点通过后，再打开对应的 <code>*-quiz.html</code> 测验作答。</p>
+  </article>
+</div>
+<script>
+  /* 演示自适应高度（read-mode 唯一的 JS，仅为演示可用性）：内嵌 viz iframe 通过 postMessage
+     上报自身实际高度，父页据此调整对应 iframe 高度。file:// 双击打开同样生效。 */
+  (function () {
+    window.addEventListener('message', function (e) {
+      var d = e.data;
+      if (!d || typeof d.__vizHeight !== 'number' || d.__vizHeight <= 0) return;
+      var frames = document.querySelectorAll('figure.viz iframe');
+      for (var i = 0; i < frames.length; i++) {
+        if (frames[i].contentWindow === e.source) {
+          frames[i].style.height = Math.max(300, Math.min(1200, d.__vizHeight)) + 'px';
+          break;
+        }
+      }
+    });
+  })();
+</script>
+</body>
+</html>

@@ -136,59 +136,56 @@ The actual teaching material. Rebuilt versions get `_v2`, `_v3`.
 
 > 版本 v< version > · 前置：<prev chapter or none> · 预计学习时间：<X>min
 > 本章节目标：学完后你应当能 <1–3 条可验证的能力>
+> 学习路线：通读 → 每个概念：操作②的交互动画 + 做检查点 → 答错的回看对应要素 → 全部检查点通过后再打开测验
 
 ## 引入
-（一个真实问题或反直觉现象，2–4 句话勾起为什么需要学这个）
+（一个真实问题或反直觉现象，2–4 句话勾起为什么需要学这个。用可观察的行为/输出反差开场，**不要用类比开场**。）
 
-## 知识点清单（本章覆盖度基准）
-> 本节是**章节测验出题范围的唯一基准**。测验的每个考点必须能映射回这里的一项；不在此清单的内容不得作为计分题（见 `references/grading.md` 超纲规则）。生成测验前先核对这份清单，生成后再次核对覆盖度。
+## 知识点清单（本章覆盖度基准 + 考点断言）
+> 本节是**章节测验出题范围的唯一基准**。每个 KP 下必须列出 3–6 条**可考断言**（A1、A2…）——断言 = 一句可判对错的事实。测验每题的考点必须映射到具体断言；⑤边界条件的每个 case 必须有对应断言；映射不到断言的题按超纲处理（见 `references/grading.md`）。生成测验前先核对这份清单，生成后再次核对断言级覆盖。
 - **KP1**：<一句话知识点>（关联概念节：§核心概念.1）
+  - A1 <断言，如「`b = a` 复制的是引用值，堆上不出现新对象」>
+  - A2 <断言>
+  - A3 <…>
 - **KP2**：<一句话知识点>（关联：§核心概念.2）
-- **KP3**：<…>
-- **KP4**：<…>
-（建议 4–8 个知识点；粒度以"能出一道独立小题"为准。）
+  - A1 <…>
+（建议 4–8 个知识点；断言粒度以"能出一道独立小题"为准。）
 
 ## 核心概念
-### 1. <concept>
-**① 精确定义**（技术层面：公式 / 函数签名 / 语法 / 语义规则。不能只用类比搪塞——类比放②，定义必须有可查证的精确表述。）
-**② 直觉解释**（类比 / 心智模型，帮助理解而非替代定义）
-**③ 最小例子**（能跑/能验证的最小用例，标注输入输出）
-**④ 推导或代码**（这个概念如何落地：算法逐步推导，或代码逐行注释，或状态流转图。不能只给结论。）
-**⑤ 边界条件**（什么时候适用 / 什么时候失效 / 极端输入会怎样 / 性能边界）
-**⑥ 与相关概念对比**（和易混淆的 X 有什么区别？何时该用本概念而非 X？）
+### 1. <concept>（KPx）
+**① 精确定义**（技术层面：公式 / 函数签名 / 语法 / 语义规则，必须可查证。**排版规则**：每条独立规则单独一条列表项、每条 ≤2 句；≥2 个并列情形（如基本类型 vs 引用类型）必须分条列出并加粗情形名。禁止类比。）
+**② 直观演示（交互动画）**（该 KP 的**机制本身**的交互动画，内嵌在正文（HTML 版为 iframe）。配 2–3 条「观察要点」：点什么、看哪个状态变化、验证哪条断言（KP-Ax）。演示必须能复现⑤中至少一个边界 case。仅纯记忆型 KP 可豁免，豁免须在生成记录中写明理由。**禁止用类比文案替代演示**。规范见 `references/visualization.md`。）
+**③ 最小例子**（能跑/能验证的最小用例，≤10 行，标注输入输出）
+**④ 推导或代码**（机制如何落地：编号步骤逐步推导（每步一句），或代码逐行注释。不能只给结论。）
+**⑤ 边界条件**（**排版规则**：每条 case 单独一条列表项，格式 = 场景（代码/输入）→ 结果 → 一句原因；禁止内联 a)b)c)。每条 case 必须有断言清单中的对应断言，其中至少一条要在②演示中可复现。）
+**⑥ 与相关概念对比**（和易混淆的 X 的区别：≥2 概念 × ≥2 维度必须用对比表格；何时该用本概念而非 X？）
+
+**🧪 检查点（非计分自测，做完再往下）**
+- Q1（预测）：<一段代码/场景——先写下预测，再到②演示里操作验证> → 答案 + 一句推理 + 回看指引（如「见⑤-b」）
+- Q2（判断+说理由）：<一个说法，判断对错并说明机制> → 同上
+- Q3（填关键值）：<挖一个精确值/签名/默认值> → 同上
 
 ### 2. <concept>
-（同样六要素。每个核心概念都必须六要素齐全——不允许只给类比不给定义，也不允许只给定义不给边界。）
-（**可选**：若该概念适合图形化演示，在⑥对比后插入 🖼️ 交互演示链接，见下方「图形化演示嵌入」说明。）
-
-## 图形化演示嵌入（可选，按概念判定）
-> 不是每个概念都要画。对每个 KP 用 `references/visualization.md` 的判定准则（≥2 信号才画）决定是否生成。决定要画的，存为 `chapters/viz/stageN-chXX-<kp-slug>.html`（独立文件，可交互，vanilla JS，无外部依赖），在对应概念节内嵌链接：
->
-> ```markdown
-> > 🖼️ **交互演示**：[<一句话演示名>](./viz/stageN-chXX-<kp-slug>.html) — <用户能看到/做到什么>。浏览器打开即可。
-> ```
->
-> 决定不画的 KP 不加占位、不加链接——静默即可。零演示的章节完全正常。
-> 主 agent 生成后必须按 `references/visualization.md` 跑 JS 静态检查，不过的要么重生成要么丢弃改文字。
+（同样结构。①③④⑤⑥齐全 + ②演示（或注明豁免理由）+ 检查点 2–3 题——全部非妥协项，缺一即重生成。）
 
 ## 实战演示
 （端到端走一个例子，展示核心概念如何协同落地。如果章节偏算法，这里给出完整推导/代码；如果偏实操，给出可复现的命令序列 + 预期输出。这一节要能让用户照着做一遍。）
 
 ## 常见陷阱 & 易错点
-- …（每条对应一个知识点 KP，标注关联）
+- …（每条对应一个 KP 或断言，标注关联）
 - …
 
 ## 小结 & 自查
 - 三个关键 takeaway（对应最重要的 3 个 KP）
-- 自测：对照「知识点清单」，你能否对每一项给出定义+例子？答不上来的回去看对应概念节。
+- 自查：逐条对照断言清单——哪条断言你无法独立复述或演示？回看对应概念节、重玩②演示、重做错过的检查点。
 
 ## 下一步
-学完填写 `quizzes/stageN-chXX-quiz.md` 并上传。
+学完填写 `quizzes/stageN-chXX-quiz.html` 并提交。
 ```
 
-**六要素是非妥协项**：每个核心概念必须六项齐全。常犯的偏差是"类比写得很生动，但精确定义缺失或含糊"——这会让用户在测验的填空/算法题上失分（题要的是精确值/签名，脑子里只有类比）。另一个偏差是"只给定义不给边界"，导致实战题失分。六要素逐一覆盖这两类失分。
+**六要素是非妥协项，且类比已废除**：每个核心概念必须六项齐全 + 检查点 2–3 题。②直觉解释（类比/心智模型）**已移除**——类比（"像遥控器/像仓库/像饼干模具"）对用户不可见、不可操作，是理解偏差的主要来源；直觉改由②直观演示（可操作的交互动画）+ 观察要点承担，全文禁止比喻类文案。另一个常犯偏差是"定义密集堆砌"——①⑤的分条排版规则是硬约束（一论断一条、一 case 一条），交付前有对应的静态检查。演示默认每个核心概念必配（豁免仅限纯记忆型 KP 且须写明理由），质量标准见 `references/visualization.md`。
 
-Calibration rule: if `baseline_score` is low, this doc leans harder on ②直觉 + ③例子，把步骤拆得更细，jargon 首次出现必给定义；但 ①精确定义 和 ⑤边界条件 仍然不可省略——只是用更通俗的话重述，不能跳过。If high, it can be denser and assume prior vocabulary.
+Calibration rule: if `baseline_score` is low, this doc leans harder on ②的观察要点 + ③例子，把④的步骤拆得更细，jargon 首次出现必给定义；但 ①精确定义 和 ⑤边界条件 仍然不可省略——只是用更通俗的话重述，不能跳过。If high, it can be denser and assume prior vocabulary.
 
 ## chapter-quiz.md — `quizzes/stageN-chXX-quiz.md`
 
@@ -197,43 +194,43 @@ Calibration rule: if `baseline_score` is low, this doc leans harder on ②直觉
 
 > 通过线：与计划测验合并 ≥80%。填写后上传本文件。
 > 覆盖六大题型，请逐题作答。
-> 每题标注「考点: KP-x」——KP 编号对应章节文档的「知识点清单」。出题前 AI 已核对所有考点都在清单内；若你发现某题考点不在清单，按超纲规则不计分（见批阅区说明）。
+> 每题标注「考点: KP-x·Ay」——对应章节文档「知识点清单」下的**断言**（Ax）。出题前 AI 已核对所有考点都映射到已讲授的断言；若你发现某题考点映射不到断言，按超纲规则不计分（见批阅区说明）。
 
 ## 一、选择题
-1. (选择题, 1分) [考点: KP-2] …
+1. (选择题, 1分) [考点: KP-2·A3] …
    - A. … / B. … / C. … / D. …
    - **你的答案：**
    - **理由：**（简述）
 
 ## 二、填空题
-1. (填空题, 1分) [考点: KP-1] … _____ …
+1. (填空题, 1分) [考点: KP-1·A2] … _____ …
    - **你的答案：**
 
 ## 三、实战题
-1. (实战题, 4分) [考点: KP-3] （明确任务 + 输入 + 期望输出格式）
+1. (实战题, 4分) [考点: KP-3·A1] （明确任务 + 输入 + 期望输出格式）
    - **你的答案：**
 
 ## 四、模拟题
-1. (模拟题, 4分) [考点: KP-4] （场景：…… 你会如何 ……）
+1. (模拟题, 4分) [考点: KP-4·A2] （场景：…… 你会如何 ……）
    - **你的答案：**
 
 ## 五、算法 / 推导题
-1. (算法题, 5分) [考点: KP-2] （请推导/设计 ……）
+1. (算法题, 5分) [考点: KP-2·A4] （请推导/设计 ……）
    - **你的答案：**
 
 ## 六、高难度综合题
-1. (综合题, 6分) [考点: KP-1, KP-3] （综合 …… 与 …… 解决 ……）
+1. (综合题, 6分) [考点: KP-1·A2, KP-3·A1] （综合 …… 与 …… 解决 ……）
    - **你的答案：**
 
 ---
 *AI 批阅区（用户请勿填写）*
 | 题号 | 类型 | 考点 | 正确？ | 计分？ | 失分点 |
 |------|------|------|--------|--------|--------|
-| 1 | 选择 | KP-2 |  | 是 |  |
-| 2 | 填空 | KP-1 |  | 是 |  |
-| 3 | 实战 | KP-3 |  | 是 |  |
-| … | | | | | |
-（"计分？"列：是=正常计分；**超纲=不计分**——考点不在章节知识点清单内时填此项，该题从分母中剔除，见 grading.md）
+| 1 | 选择 | KP-2·A3 |  | 是 |  |
+| 2 | 填空 | KP-1·A2 |  | 是 |  |
+| 3 | 实战 | KP-3·A1 |  | 是 |  |
+| … | | | | |  |
+（"计分？"列：是=正常计分；**超纲=不计分**——考点映射不到章节断言清单时填此项，该题从分母中剔除，见 grading.md）
 **章节测验得分：0.XX（X/Y 分，Y=计分题总分）**（若含超纲题，注明：已剔除 N 道超纲题，另见补讲补考说明）
 ```
 
@@ -470,7 +467,7 @@ Standalone, double-click-to-open, vanilla JS, no external deps. Follow this skel
 
 ## read-mode html skeleton — `chapters/stageN-chXX-<slug>.html` / `plan/master-plan.html`
 
-Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master plan (user reads only, no form). Content structure mirrors the md chapter-doc template (引入/知识点清单/核心概念六要素/🖼️演示/实战/陷阱/小结) — render that content into HTML. Full rules in `references/html-format.md`.
+Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master plan (user reads only, no form). Content structure mirrors the md chapter-doc template (引入 / 知识点清单+考点断言 / 核心概念六要素——②为内嵌演示 / 每概念检查点 / 实战 / 陷阱 / 小结) — render that content into HTML. Full rules in `references/html-format.md`.
 
 > **⚠️ Provenance rule (load-bearing):** copy this skeleton + `<style>` **fresh from this file** on EVERY generation and EVERY rebuild. NEVER copy the structure/style from an existing sibling `chapters/*.html` — siblings are generated output that may come from an older skill version and will silently propagate a stale skeleton. Every generated chapter MUST carry the `<!-- learning-loop skeleton: read-mode -->` signature in its `<head>`; the main agent greps for it before shipping and regenerates if it's missing.
 
@@ -552,7 +549,37 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
   ol.elements .el-label{font-weight:700; font-size:.85rem; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-border); padding:4px 10px; border-radius:var(--r-sm); height:fit-content; white-space:nowrap;}
   ol.elements .el-body{min-width:0;} ol.elements .el-body p{margin:0 0 8px;} ol.elements .el-body p:last-child{margin-bottom:0;}
 
-  /* embedded visualization component (was a separate link) */
+  /* element-body micro-formatting (anti wall-of-text): sub-lists & comparison tables */
+  ol.elements .el-body ul, ol.elements .el-body ol{margin:6px 0 2px; padding-left:22px;}
+  ol.elements .el-body ul li, ol.elements .el-body ol li{margin:5px 0;}
+  ol.elements .el-body table{border-collapse:collapse; width:100%; margin:8px 0 2px; font-size:.92rem;}
+  ol.elements .el-body th, ol.elements .el-body td{border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top;}
+  ol.elements .el-body thead th{background:var(--surface-2); font-size:.85rem;}
+  ol.elements .el-body tbody tr:nth-child(even){background:var(--surface);}
+  /* ② slot: the embedded demo breaks out to the card's full width (label col 148px + 18px gap) */
+  ol.elements .el-body figure.viz{margin:10px 0 4px -166px; width:calc(100% + 166px); max-width:calc(100% + 166px);}
+  /* observe-points list under the ② demo */
+  ul.observe{margin:8px 0 0; padding-left:0; list-style:none; color:var(--muted); font-size:.92rem;}
+  ul.observe li{margin:3px 0; padding-left:26px; position:relative;}
+  ul.observe li::before{content:"👀"; position:absolute; left:0;}
+
+  /* checkpoint (non-graded self-test) after each concept — details/summary, zero JS */
+  section.checkpoint{border:1px dashed var(--accent-border); background:var(--accent-soft); border-radius:var(--r); padding:14px 18px; margin:14px 0 28px;}
+  section.checkpoint .cp-title{font-weight:700; color:var(--accent); font-size:.92rem; margin-bottom:6px;}
+  section.checkpoint details{background:var(--bg); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:8px 14px; margin:8px 0;}
+  section.checkpoint summary{cursor:pointer; font-weight:600; font-size:.95rem;}
+  section.checkpoint summary:hover{color:var(--accent);}
+  section.checkpoint details .ans{margin-top:8px; padding-top:8px; border-top:1px dashed var(--hairline); color:var(--muted); font-size:.9rem;}
+
+  /* study-route pill under the meta chips */
+  .study-route{display:inline-block; font-size:.88rem; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 16px; margin:0 0 28px;}
+
+  /* assertion inventory inside the KP callout */
+  .kp .kp-asserts{list-style:none; margin:10px 0 0; padding:10px 0 0 2px; border-top:1px dashed var(--kp-bd); font-size:.84rem; color:var(--kp-text);}
+  .kp .kp-asserts li{margin:3px 0;}
+  .kp .kp-asserts li strong{margin-right:4px;}
+
+  /* embedded visualization component (loaded inline in the ② slot) */
   figure.viz{margin:18px 0 6px; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow-sm); background:var(--surface);}
   figure.viz figcaption{display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:.9rem;}
   figure.viz iframe{display:block; width:100%; height:460px; border:0; background:var(--bg);} /* 默认高度；页面脚本会按演示实际高度自适应，避免裁切 */
@@ -601,6 +628,7 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
       <span class="chip">前置：&lt;prev&gt;</span>
       <span class="chip">预计 &lt;X&gt;min</span>
     </div>
+    <p class="study-route">🧭 学习路线：通读 → 每个概念：操作②的演示 + 做检查点 → 答错回看对应要素 → 全部通过后再开测验</p>
 
     <section id="sec-obj" class="callout objectives">
       <div class="ct">🎯 本章节目标</div>
@@ -612,45 +640,95 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
     <p>&lt;一个真实问题或反直觉现象，2-4 句话&gt;</p>
 
     <section id="sec-kp" class="callout kp">
-      <div class="ct">📋 知识点清单（本章覆盖度基准）</div>
-      <div class="hint">测验出题范围的唯一基准。每个考点必须映射回这里的一项。</div>
+      <div class="ct">📋 知识点清单（本章覆盖度基准 + 考点断言）</div>
+      <div class="hint">测验出题范围的唯一基准。每题考点必须映射到具体断言（Ax）；映射不到 = 超纲。</div>
       <div class="kp-tags">
         <span><strong>KP1</strong> · &lt;一句话知识点&gt;</span>
         <span><strong>KP2</strong> · &lt;一句话知识点&gt;</span>
         <span><strong>KP3</strong> · &lt;一句话知识点&gt;</span>
       </div>
+      <ul class="kp-asserts">
+        <li><strong>KP1·A1</strong> &lt;可考断言：一句可判对错的事实&gt;</li>
+        <li><strong>KP1·A2</strong> &lt;…&gt;</li>
+        <li><strong>KP2·A1</strong> &lt;…&gt;</li>
+      </ul>
     </section>
 
     <h2 id="sec-core"><span class="nh">02</span> 核心概念</h2>
 
-    <h3>1. &lt;concept&gt;</h3>
+    <h3>1. &lt;concept&gt;（KPx）</h3>
     <ol class="elements">
-      <li><span class="el-label">① 精确定义</span><div class="el-body">&lt;公式/签名/语法/语义&gt;</div></li>
-      <li><span class="el-label">② 直觉解释</span><div class="el-body">&lt;类比/心智模型&gt;</div></li>
-      <li><span class="el-label">③ 最小例子</span><div class="el-body">&lt;输入→输出，可验证&gt;</div></li>
-      <li><span class="el-label">④ 推导或代码</span><div class="el-body">&lt;逐步推导/逐行注释&gt;</div></li>
-      <li><span class="el-label">⑤ 边界条件</span><div class="el-body">&lt;何时适用/失效&gt;</div></li>
-      <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">&lt;和 X 的区别&gt;</div></li>
+      <li><span class="el-label">① 精确定义</span><div class="el-body">
+        <ul>
+          <li><strong>&lt;规则/情形一&gt;</strong>：&lt;≤2 句的精确表述，语法用 code&gt;</li>
+          <li><strong>&lt;规则/情形二&gt;</strong>：&lt;…&gt;</li>
+        </ul>
+      </div></li>
+      <li><span class="el-label">② 直观演示</span><div class="el-body">
+        <figure class="viz">
+          <figcaption>🖼️ 交互演示：&lt;机制名&gt;</figcaption>
+          <iframe src="./viz/stageN-chXX-<kp-slug>.html" loading="lazy" title="&lt;演示名&gt;"></iframe>
+          <a class="viz-open" href="./viz/stageN-chXX-<kp-slug>.html" target="_blank">在新标签页打开 ↗</a>
+        </figure>
+        <ul class="observe">
+          <li>&lt;点什么：操作哪个控件&gt;</li>
+          <li>&lt;看什么：哪个状态如何变化&gt;</li>
+          <li>&lt;验证哪条断言（KPx·Ay）&gt;</li>
+        </ul>
+        <!-- 仅纯记忆型 KP 可豁免演示：豁免时此要素写「演示豁免：理由」并用机制语言补一段可读的状态说明，禁止类比 -->
+      </div></li>
+      <li><span class="el-label">③ 最小例子</span><div class="el-body">
+        <pre><code>&lt;≤10 行代码，期望输出写注释&gt;</code></pre>
+      </div></li>
+      <li><span class="el-label">④ 推导或代码</span><div class="el-body">
+        <ol>
+          <li>&lt;步骤一：一句推理&gt;</li>
+          <li>&lt;步骤二：一句推理&gt;</li>
+        </ol>
+      </div></li>
+      <li><span class="el-label">⑤ 边界条件</span><div class="el-body">
+        <ul>
+          <li><strong>&lt;场景一&gt;</strong>：&lt;代码/输入&gt; → &lt;结果&gt;。原因：&lt;一句&gt;</li>
+          <li><strong>&lt;场景二&gt;</strong>：&lt;…&gt; → &lt;…&gt;。原因：&lt;…&gt;</li>
+        </ul>
+      </div></li>
+      <li><span class="el-label">⑥ 与相关概念对比</span><div class="el-body">
+        <table>
+          <thead><tr><th>维度</th><th>本概念</th><th>易混淆概念 X</th></tr></thead>
+          <tbody>
+            <tr><td>&lt;维度一&gt;</td><td>…</td><td>…</td></tr>
+            <tr><td>&lt;维度二&gt;</td><td>…</td><td>…</td></tr>
+          </tbody>
+        </table>
+      </div></li>
     </ol>
-    <!-- 可选：交互演示。决定要画的 KP 才加 <figure class="viz">；不画的不留占位 -->
-    <figure class="viz">
-      <figcaption>🖼️ 交互演示：&lt;一句话名&gt;</figcaption>
-      <iframe src="./viz/stageN-chXX-<kp-slug>.html" loading="lazy" title="&lt;演示名&gt;"></iframe>
-      <a class="viz-open" href="./viz/stageN-chXX-<kp-slug>.html" target="_blank">在新标签页打开 ↗</a>
-    </figure>
 
-    <h3>2. &lt;concept&gt;</h3>
-    <ol class="elements">
-      <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
-      <!-- 同样六要素；若该概念有演示，再加一个 <figure class="viz"> -->
-    </ol>
+    <section class="checkpoint">
+      <div class="cp-title">🧪 检查点 · KPx（非计分，做完再往下）</div>
+      <details>
+        <summary>Q1（预测）：&lt;代码/场景——先写下预测，再到上面的演示里操作验证&gt;</summary>
+        <div class="ans">&lt;答案 + 一句推理 + 回看指引（如「见⑤-场景二」）&gt;</div>
+      </details>
+      <details>
+        <summary>Q2（判断+说理由）：&lt;一个说法，对还是错？为什么？&gt;</summary>
+        <div class="ans">&lt;答案 + 推理&gt;</div>
+      </details>
+      <details>
+        <summary>Q3（填关键值）：&lt;…&gt; _____</summary>
+        <div class="ans">&lt;答案&gt;</div>
+      </details>
+    </section>
+
+    <h3>2. &lt;concept&gt;（KPx）</h3>
+    <!-- 同样结构：①列表化定义 ②内嵌演示+观察要点（豁免须写理由）③最小例子 ④步骤 ⑤case 列表 ⑥对比表 + 检查点 -->
 
     <!-- ====== 补讲（可选；仅当出现超纲补讲时才有）======
      位置：核心概念之后、实战演示之前。规范（必须全部遵守）：
      ① 放在 <h2 id="sec-backfill">补讲</h2> 之下；
      ② 每个补讲：<h3 id="backfill-<slug>">标题 <span class="backfill-badge">补讲</span></h3>
         + <p class="backfill-meta">KP·日期·来源（如：KP6 补充 · 2026-08-13 阶段总测验超纲补讲）</p>
-        + 六要素 <ol class="elements">（与核心概念同结构）；
+        + 六要素 <ol class="elements">（与核心概念同结构；②直观演示在补讲中可豁免，豁免时写「演示豁免：理由」，
+          并把新增断言补进 kp-asserts 清单）+ 检查点 1–2 题；
      ③ 在左侧 <aside class="toc"> 的 nav 末尾（小结自查之后）按 toc-sub 分组追加
         <a href="#backfill-<slug>">跳转链接</a>。详见 references/grading.md「补讲」。 -->
 <!--
@@ -660,7 +738,7 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
 <p class="backfill-meta">KP6 补充 · 2026-08-13 阶段总测验超纲补讲</p>
 <ol class="elements">
   <li><span class="el-label">① 精确定义</span><div class="el-body">…</div></li>
-  <li><span class="el-label">② 直觉解释</span><div class="el-body">…</div></li>
+  <li><span class="el-label">② 直观演示</span><div class="el-body">演示豁免：&lt;纯记忆型/理由&gt;，用机制语言说明。</div></li>
   <li><span class="el-label">③ 最小例子</span><div class="el-body">…</div></li>
   <li><span class="el-label">④ 推导或代码</span><div class="el-body">…</div></li>
   <li><span class="el-label">⑤ 边界条件</span><div class="el-body">…</div></li>
@@ -691,7 +769,7 @@ Standalone, double-click-to-open, vanilla, no deps. For chapter docs and master 
       <div class="self">自测：对照知识点清单，你能否对每一项给出定义+例子？</div>
     </section>
 
-    <p class="footer-note">学完请打开对应的 <code>*-quiz.html</code> 测验作答。</p>
+    <p class="footer-note">所有检查点通过后，再打开对应的 <code>*-quiz.html</code> 测验作答。</p>
   </article>
 </div>
 <script>
@@ -801,9 +879,9 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 <form id="quizForm" action="">
 
   <h2>一、选择题</h2>
-  <fieldset class="question" data-qid="q1" data-kp="KP-2" data-type="选择" data-points="1">
+  <fieldset class="question" data-qid="q1" data-kp="KP-2" data-assert="KP-2-A3" data-type="选择" data-points="1">
     <legend>1. &lt;题干&gt;</legend>
-    <div class="qmeta">[考点: KP-2] · (选择题, 1分)</div>
+    <div class="qmeta">[考点: KP-2·A3] · (选择题, 1分)</div>
     <label class="option"><input type="radio" name="q1" value="A"> A. &lt;option&gt;</label>
     <label class="option"><input type="radio" name="q1" value="B"> B. &lt;option&gt;</label>
     <label class="option"><input type="radio" name="q1" value="C"> C. &lt;option&gt;</label>
@@ -811,9 +889,9 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
     <div class="feedback" id="fb-q1"></div>
   </fieldset>
 
-  <fieldset class="question" data-qid="q2" data-kp="KP-3" data-type="多选" data-points="2">
+  <fieldset class="question" data-qid="q2" data-kp="KP-3" data-assert="KP-3-A1,KP-3-A2" data-type="多选" data-points="2">
     <legend>2. &lt;题干&gt;（多选）</legend>
-    <div class="qmeta">[考点: KP-3] · (选择题[多选], 2分)</div>
+    <div class="qmeta">[考点: KP-3·A1, KP-3·A2] · (选择题[多选], 2分)</div>
     <label class="option"><input type="checkbox" name="q2" value="A"> A. &lt;option&gt;</label>
     <label class="option"><input type="checkbox" name="q2" value="B"> B. &lt;option&gt;</label>
     <label class="option"><input type="checkbox" name="q2" value="C"> C. &lt;option&gt;</label>
@@ -822,41 +900,41 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
   </fieldset>
 
   <h2>二、填空题</h2>
-  <fieldset class="question" data-qid="q3" data-kp="KP-1" data-type="填空" data-points="1">
+  <fieldset class="question" data-qid="q3" data-kp="KP-1" data-assert="KP-1-A2" data-type="填空" data-points="1">
     <legend>3. &lt;题干&gt; _____</legend>
-    <div class="qmeta">[考点: KP-1] · (填空题, 1分)</div>
+    <div class="qmeta">[考点: KP-1·A2] · (填空题, 1分)</div>
     <input type="text" id="q3" placeholder="你的答案">
     <div class="feedback" id="fb-q3"></div>
   </fieldset>
 
   <h2>三、实战题</h2>
-  <fieldset class="question" data-qid="q4" data-kp="KP-3" data-type="实战" data-points="4">
+  <fieldset class="question" data-qid="q4" data-kp="KP-3" data-assert="KP-3-A1" data-type="实战" data-points="4">
     <legend>4. &lt;题干：明确任务+输入+期望输出&gt;</legend>
-    <div class="qmeta">[考点: KP-3] · (实战题, 4分)</div>
+    <div class="qmeta">[考点: KP-3·A1] · (实战题, 4分)</div>
     <textarea id="q4" placeholder="在此作答（可换行）"></textarea>
     <div class="feedback" id="fb-q4"></div>
   </fieldset>
 
   <h2>四、模拟题</h2>
-  <fieldset class="question" data-qid="q5" data-kp="KP-4" data-type="模拟" data-points="4">
+  <fieldset class="question" data-qid="q5" data-kp="KP-4" data-assert="KP-4-A2" data-type="模拟" data-points="4">
     <legend>5. &lt;场景：… 你会如何 …&gt;</legend>
-    <div class="qmeta">[考点: KP-4] · (模拟题, 4分)</div>
+    <div class="qmeta">[考点: KP-4·A2] · (模拟题, 4分)</div>
     <textarea id="q5" placeholder="在此作答"></textarea>
     <div class="feedback" id="fb-q5"></div>
   </fieldset>
 
   <h2>五、算法 / 推导题</h2>
-  <fieldset class="question" data-qid="q6" data-kp="KP-2" data-type="算法" data-points="5">
+  <fieldset class="question" data-qid="q6" data-kp="KP-2" data-assert="KP-2-A4" data-type="算法" data-points="5">
     <legend>6. &lt;题干：请推导/设计 …&gt;</legend>
-    <div class="qmeta">[考点: KP-2] · (算法题, 5分)</div>
+    <div class="qmeta">[考点: KP-2·A4] · (算法题, 5分)</div>
     <textarea id="q6" placeholder="在此作答"></textarea>
     <div class="feedback" id="fb-q6"></div>
   </fieldset>
 
   <h2>六、高难度综合题</h2>
-  <fieldset class="question" data-qid="q7" data-kp="KP-1,KP-3" data-type="综合" data-points="6">
+  <fieldset class="question" data-qid="q7" data-kp="KP-1,KP-3" data-assert="KP-1-A2,KP-3-A1" data-type="综合" data-points="6">
     <legend>7. &lt;题干：综合 … 与 … 解决 …&gt;</legend>
-    <div class="qmeta">[考点: KP-1, KP-3] · (综合题, 6分)</div>
+    <div class="qmeta">[考点: KP-1·A2, KP-3·A1] · (综合题, 6分)</div>
     <textarea id="q7" placeholder="在此作答"></textarea>
     <div class="feedback" id="fb-q7"></div>
   </fieldset>
@@ -972,7 +1050,7 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 
 **Quiz-form non-negotiables:**
 - `<body data-quiz="<slug>">` carries the slug used in the download filename.
-- Every question is a `<fieldset class="question" data-qid="qN" data-kp="..." data-type="..." data-points="...">` — the AI reads these data-* attrs when grading (this replaces the inline `[考点: KP-x]` md tags).
+- Every question is a `<fieldset class="question" data-qid="qN" data-kp="..." data-assert="..." data-type="..." data-points="...">` — the AI reads these data-* attrs when grading (this replaces the inline `[考点: KP-x]` md tags). **`data-assert` carries the assertion IDs** (comma-separated when multiple, format `KP-2-A3`; prose displays it as `KP-2·A3`) — every listed assertion MUST exist in the chapter doc's 断言清单 (`kp-asserts`). A question whose assertion isn't listed there is 超纲 — rewrite it at generation time, don't wait for grading.
 - Radio/checkbox `name` MUST equal the qid (`q1`); text/textarea `id` MUST equal the qid (`q3`). The submit JS relies on this exact mapping.
 - `<form id="quizForm">`, `<button id="submitBtn" type="button">`, `<pre id="answerOutput">`, `<script id="restoreData" ...>`, `<script id="quizKey" ...>`, `<div id="gradingSummary">` all required. Every question's `<fieldset>` MUST contain a `<div class="feedback" id="fb-qN">` slot (empty initially).
 - The submit JS is the canonical version from `references/html-format.md` — copy verbatim, do not rewrite. It includes the **restore-on-load** logic: on page load, `fetch('./<quiz>-answers.json')` to refill the form (so refresh isn't blank once the user placed the downloaded json next to the html), falling back to a `localStorage` cache if fetch is CORS-blocked (Chrome on file://) or the file is absent. Both the submit handler (which writes localStorage) and the `restore()` call at the end are mandatory parts of the canonical JS.

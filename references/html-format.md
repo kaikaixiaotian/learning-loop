@@ -12,7 +12,7 @@ Markdown quiz files force the user to edit raw text (`**你的答案：** ___`),
 
 ### Mode A: read-mode (chapter docs, master plan, progress)
 
-User only **reads** — no form, no submission. A chapter doc is a long, styled, scrollable page with a sticky table of contents, the six-element concept structure (as a scannable `ol.elements` definition list, not a wall of text), a KP list, and 🖼️ visualizations **embedded inline** as `<iframe>` (loaded from `./viz/*.html`, with an "open in new tab" fallback link). The master plan is a collapsible stage tree with a progress bar. No JS needed beyond optional collapsible-section toggles.
+User only **reads** — no form, no submission. A chapter doc is a long, styled, scrollable page with a sticky table of contents, the six-element concept structure (①③④⑤⑥ as a scannable `ol.elements` definition list whose bodies are sub-lists/tables of discrete claims — never a wall of text; ② 直观演示 holds the embedded interactive demo + 观察要点), a KP list **with the 考点断言 inventory** (`kp-asserts`), 🖼️ visualizations **embedded inline** in each concept's ② slot as `<iframe>` (loaded from `./viz/*.html`, with an "open in new tab" fallback link), and a zero-JS **检查点** after each concept (`<details><summary>` self-test questions with expandable answers). The master plan is a collapsible stage tree with a progress bar. The only JS in a chapter doc is the viz auto-height listener; checkpoints use native `<details>`.
 
 ### Mode B: quiz-form (baseline, chapter-quiz, stage-total-quiz)
 
@@ -25,7 +25,7 @@ User **fills a form and submits**. This is where HTML earns its keep — interac
 | 填空题 | `<input type="text" id="q3">` or `<textarea>` for multi-blank | short answer |
 | 实战/模拟/算法/综合 | `<textarea id="qN" rows="6">` | long-form answer |
 
-Every question sits in a `<fieldset class="question" data-qid="q1" data-kp="KP-2" data-type="选择" data-points="1">`. The `data-*` attributes carry the metadata that used to be inline md tags (`[考点: KP-2]`, `(选择题, 1分)`) — the AI reads them from the HTML when grading, and they drive the per-question display.
+Every question sits in a `<fieldset class="question" data-qid="q1" data-kp="KP-2" data-assert="KP-2-A3" data-type="选择" data-points="1">`. The `data-*` attributes carry the metadata that used to be inline md tags (`[考点: KP-2·A3]`, `(选择题, 1分)`) — the AI reads them from the HTML when grading, and they drive the per-question display. `data-assert` lists the assertion IDs the question tests (comma-separated when multiple); every ID MUST exist in the chapter doc's 断言清单, or the question is 超纲 (see `references/grading.md`).
 
 ## answers.json — the answer-submission contract
 
@@ -69,6 +69,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
       "qid": "q1",
       "type": "选择",
       "kp": "KP-2",
+      "assert": "KP-2-A3",
       "points": 1,
       "answer": "B"
     },
@@ -76,6 +77,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
       "qid": "q2",
       "type": "多选",
       "kp": "KP-4",
+      "assert": "KP-4-A1,KP-4-A2",
       "points": 2,
       "answer": ["A", "C"]
     },
@@ -83,6 +85,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
       "qid": "q3",
       "type": "填空",
       "kp": "KP-1",
+      "assert": "KP-1-A2",
       "points": 1,
       "answer": "commit",
       "accept": ["commit", "git commit"]
@@ -91,6 +94,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
       "qid": "q4",
       "type": "实战",
       "kp": "KP-3",
+      "assert": "KP-3-A1",
       "points": 4,
       "rubric": {
         "correctness": "应正确使用 git reset --mixed",
@@ -102,6 +106,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
       "qid": "q6",
       "type": "综合",
       "kp": "KP-1,KP-3",
+      "assert": "KP-1-A2,KP-3-A1",
       "points": 6,
       "rubric": {
         "subproblems": ["(a) 诊断根因", "(b) 策略选择+取舍", "(c) 具体规则"],
@@ -113,7 +118,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
 ```
 
 **Field rules:**
-- `qid` / `type` / `kp` / `points` — mirror the `<fieldset>` attributes.
+- `qid` / `type` / `kp` / `assert` / `points` — mirror the `<fieldset>` attributes. `assert` lists the assertion IDs the question tests (comma-separated when multiple, format `KP-2-A3`); every ID must exist in the chapter doc's 断言清单 (`kp-asserts`) — this is what the 超纲 check keys on (older quizzes predating `assert` fall back to `kp`-level checks).
 - `answer` — for objective types (选择/多选/填空): the single correct value (string for radio/填空, array for checkbox). Use `accept` for multiple acceptable phrasings on 填空.
 - `rubric` — for subjective types (实战/模拟/算法/综合): NOT a single answer, but scoring dimensions + key points. The AI compares the user's answer against these dimensions, NOT against a fixed string.
 - Every question must have exactly one of `answer` or `rubric` (never both).
@@ -294,10 +299,13 @@ Reuses the `visualization.md` static-check pattern, extended for forms. The main
 1. **Syntax check:** extract `<script>` content, run `node --check`.
 2. **Required-element existence:**
    - Quiz HTML: `<form id="quizForm">`, `<button id="submitBtn">`, `<pre id="answerOutput">`, `<script id="restoreData" ...>`, `<script id="quizKey" ...>`, `<div id="gradingSummary">`, and for each `data-qid="qN"` fieldset: a matching control AND an empty `<div class="feedback" id="fb-qN">` slot.
-   - Read-mode HTML: no form requirements, just that titled sections exist.
+   - Read-mode HTML: no form requirements — titled sections exist, every concept has a `<section class="checkpoint">` with 2–3 `<details>` Q&A blocks, and the KP callout contains a `kp-asserts` list (assertion inventory).
 3. **No undefined references:** every `getElementById('x')` / `querySelector('#x')` has a matching `id="x"`.
 4. **Metadata consistency (quiz only):** every `data-qid` appears in the submit JS's collection logic (radios/checkboxes by name, text/textarea by id — confirm the qid matches the control's name/id).
 5. **Skeleton provenance (mandatory gate):** read-mode HTML contains `<!-- learning-loop skeleton: read-mode -->`; quiz HTML contains `<!-- learning-loop skeleton: quiz-form -->`. A missing signature means the file was built by copying an old sibling instead of the current `references/templates.md` — regenerate from the template before shipping.
+6. **Assertion coverage (quiz ↔ chapter pair):** every `data-assert` on a fieldset (and every `assert` in quizKey) resolves to an ID in the chapter doc's 断言清单 (`kp-asserts`). An unresolvable ID = 超纲 — rewrite the question before shipping, don't defer to grading time.
+7. **Formatting gate (read-mode, anti wall-of-text):** every ⑤边界条件 renders as a `<ul>` of discrete cases (grep — an el-body `<p>` containing inline enumeration like `a)` is a violation); ① definitions are split into per-claim list items; every concept's ② slot holds an embedded demo (`<figure class="viz">`) or an explicit reasoned waiver.
+8. **Contamination guard:** the HTML contains no `--vscode-` / `icube-theme-variables` strings — those indicate IDE/editor CSS was accidentally pasted into the file (a real incident added ~1900 junk style lines to a generated chapter). Strip or regenerate.
 
 A failing check → do NOT ship. Re-dispatch to fix, or **degrade to markdown** (see below).
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>值传递 — 交互演示</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; color: #1a1a1a; }
+  h1 { font-size: 1.3rem; }
+  .stage { min-height: 300px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 12px 0; background: #fafafa; display: flex; gap: 24px; align-items: flex-start; }
+  .controls { margin: 12px 0; }
+  .controls button, .controls select { padding: 6px 12px; margin-right: 8px; }
+  .legend { font-size: 0.85rem; color: #666; margin-top: 8px; }
+  .zone { flex: 1; }
+  .zone-title { font-weight: 700; font-size: .85rem; color: #555; border-bottom: 2px solid #bbb; padding-bottom: 4px; margin-bottom: 10px; }
+  .frame { border: 2px solid #4f46e5; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; background: #fff; }
+  .frame-name { font-size: .78rem; font-weight: 700; color: #4f46e5; margin-bottom: 6px; }
+  .slot { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-family: Consolas, monospace; font-size: .85rem; }
+  .slot .name { width: 34px; text-align: right; color: #333; }
+  .slot .val { min-width: 72px; border: 1px solid #ccc; border-radius: 5px; padding: 3px 8px; background: #f6f8fa; }
+  .slot .val.copied { background: #fffbeb; border-color: #fcd34d; }
+  .arrow { color: #4f46e5; font-weight: 700; }
+  .obj { border: 2px solid #16a34a; border-radius: 8px; padding: 8px 12px; margin: 10px 0; background: #fff; font-family: Consolas, monospace; font-size: .85rem; }
+  .obj .obj-id { font-size: .72rem; color: #16a34a; font-weight: 700; }
+  .obj.changed { background: #dcfce7; }
+  .obj.unreachable { opacity: .45; border-style: dashed; }
+  .obj.new { animation: pop .3s ease-out; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .note { font-size: .82rem; color: #92580a; background: #fffbeb; border-left: 3px solid #fcd34d; padding: 6px 10px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Java 值传递 — 机制演示</h1>
+<p class="legend">选择一个场景，逐步执行，观察「栈帧里的变量槽」和「堆里的对象」如何变化。每个场景对应一条考点断言。</p>
+
+<div class="stage" id="stage"></div>
+
+<div class="controls">
+  <label>场景：
+    <select id="scenario">
+      <option value="field">① sb.append() — 通过形参改对象字段（KP6·A3）</option>
+      <option value="reassign">② sb = new … — 对形参重新赋值（KP6·A4，边界 case）</option>
+      <option value="swap">③ swap(x, y) — 交换两个引用（KP6·A5，反证）</option>
+    </select>
+  </label>
+  <button id="btn-next">下一步 ▶</button>
+  <button id="btn-reset">重置 ↺</button>
+</div>
+
+<div class="legend" id="status"></div>
+
+<script>
+(function(){
+  'use strict';
+  var state = { scenario: 'field', step: 0 };
+  var stage = document.getElementById('stage');
+  var statusEl = document.getElementById('status');
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // 每个场景 = 逐步脚本：每步 { main, f, heap, note }
+  function scenarios(){ return {
+    field: {
+      code: 'static void f(StringBuilder sb) { sb.append("!"); }\nStringBuilder s = new StringBuilder("hi");\nf(s);',
+      steps: [
+        { main:{a:'1', s:'→O1'}, f:null, heap:[{id:'O1', v:'"hi"', refs:['main.s']}], note:'初始：main 栈帧持有 a=1 和指向 O1 的引用 s。' },
+        { main:{a:'1', s:'→O1'}, f:{n:'1 (副本)', sb:'→O1 (副本)'}, heap:[{id:'O1', v:'"hi"', refs:['main.s','f.sb']}], note:'调用 f(a, s)：值传递——n 拿到 1 的副本，sb 拿到 s 的地址值副本。两个引用指向同一个 O1。', copied:true },
+        { main:{a:'1', s:'→O1'}, f:{n:'1 (副本)', sb:'→O1 (副本)'}, heap:[{id:'O1', v:'"hi!"', refs:['main.s','f.sb'], changed:true}], note:'sb.append("!")：沿副本引用找到堆上的 O1，修改其内容 → O1 变成 "hi!"。' },
+        { main:{a:'1', s:'→O1'}, f:null, heap:[{id:'O1', v:'"hi!"', refs:['main.s'], changed:true}], note:'f 返回（栈帧销毁）。main 里的 s 仍指向 O1，读到 "hi!" —— 改字段对外可见（KP6·A3）。' }
+      ]
+    },
+    reassign: {
+      code: 'static void bad(StringBuilder sb) { sb = new StringBuilder("新对象"); }\nStringBuilder s = new StringBuilder("hi");\nbad(s);',
+      steps: [
+        { main:{a:'1', s:'→O1'}, f:null, heap:[{id:'O1', v:'"hi"', refs:['main.s']}], note:'初始：s 指向 O1。' },
+        { main:{a:'1', s:'→O1'}, f:{sb:'→O1 (副本)'}, heap:[{id:'O1', v:'"hi"', refs:['main.s','f.sb']}], note:'调用 bad(s)：sb 拿到地址值副本，与 s 同指 O1。', copied:true },
+        { main:{a:'1', s:'→O1'}, f:{sb:'→O2'}, heap:[{id:'O1', v:'"hi"', refs:['main.s']},{id:'O2', v:'"新对象"', refs:['f.sb'], isNew:true}], note:'sb = new StringBuilder(...)：堆上新建 O2，f 栈帧里的 sb 改指 O2——改的只是副本，main.s 不受影响。' },
+        { main:{a:'1', s:'→O1'}, f:null, heap:[{id:'O1', v:'"hi"', refs:['main.s']},{id:'O2', v:'"新对象"', refs:[], dead:true}], note:'bad 返回。O2 无人引用（不可达，将被 GC）；main 的 s 依旧读 "hi" —— 重新赋值对外不可见（KP6·A4）。' }
+      ]
+    },
+    swap: {
+      code: 'static void swap(StringBuilder x, StringBuilder y) {\n  StringBuilder t = x; x = y; y = t;\n}\nswap(s1, s2); // s1、s2 不会交换',
+      steps: [
+        { main:{s1:'→O1', s2:'→O2'}, f:null, heap:[{id:'O1', v:'"A"', refs:['main.s1']},{id:'O2', v:'"B"', refs:['main.s2']}], note:'初始：s1→O1("A")，s2→O2("B")。' },
+        { main:{s1:'→O1', s2:'→O2'}, f:{x:'→O1 (副本)', y:'→O2 (副本)'}, heap:[{id:'O1', v:'"A"', refs:['main.s1','f.x']},{id:'O2', v:'"B"', refs:['main.s2','f.y']}], note:'调用 swap(s1, s2)：x、y 拿到的是两份地址副本。', copied:true },
+        { main:{s1:'→O1', s2:'→O2'}, f:{x:'→O2', y:'→O1'}, heap:[{id:'O1', v:'"A"', refs:['main.s1','f.y']},{id:'O2', v:'"B"', refs:['main.s2','f.x']}], note:'交换的是 f 栈帧里的 x、y 两个副本槽——堆对象纹丝不动，main.s1/s2 的值也没被改写。' },
+        { main:{s1:'→O1', s2:'→O2'}, f:null, heap:[{id:'O1', v:'"A"', refs:['main.s1']},{id:'O2', v:'"B"', refs:['main.s2']}], note:'返回后 s1 仍→O1("A")，s2 仍→O2("B")。若 Java 是引用传递（形参是实参别名），swap 应当成功——它的失败正是值传递的反证（KP6·A5）。' }
+      ]
+    }
+  };}
+
+  function slot(name, val, copied){
+    return '<div class="slot"><span class="name">' + name + '</span><span class="val' + (copied ? ' copied' : '') + '">' + esc(val) + '</span></div>';
+  }
+  function objHtml(o){
+    var cls = 'obj' + (o.changed ? ' changed' : '') + (o.dead ? ' unreachable' : '') + (o.isNew ? ' new' : '');
+    var refs = o.refs.length ? o.refs.join(', ') : '（无引用）';
+    return '<div class="' + cls + '"><div class="obj-id">堆 ' + o.id + (o.dead ? ' · 不可达' : '') + '</div>value = ' + esc(o.v) + '<br>被引用：' + esc(refs) + '</div>';
+  }
+
+  function render(){
+    var sc = scenarios()[state.scenario];
+    var st = sc.steps[Math.min(state.step, sc.steps.length - 1)];
+    var h = '';
+    h += '<div class="zone"><div class="zone-title">虚拟机栈</div>';
+    h += '<div class="frame"><div class="frame-name">main 栈帧</div>';
+    Object.keys(st.main).forEach(function(k){ h += slot(k, st.main[k], false); });
+    h += '</div>';
+    if (st.f) {
+      h += '<div class="frame"><div class="frame-name">f 栈帧（方法调用期间存在）</div>';
+      Object.keys(st.f).forEach(function(k){ h += slot(k, st.f[k], st.copied); });
+      h += '</div>';
+    } else {
+      h += '<div class="note">f 已返回：其栈帧连同形参槽一起销毁。</div>';
+    }
+    h += '</div>';
+    h += '<div class="zone"><div class="zone-title">堆 Heap</div>';
+    st.heap.forEach(function(o){ h += objHtml(o); });
+    h += '</div>';
+    stage.innerHTML = h;
+    statusEl.textContent = '第 ' + (state.step + 1) + '/' + sc.steps.length + ' 步 · ' + st.note;
+  }
+
+  document.getElementById('btn-next').addEventListener('click', function(){
+    var sc = scenarios()[state.scenario];
+    state.step = Math.min(state.step + 1, sc.steps.length - 1);
+    render();
+  });
+  document.getElementById('btn-reset').addEventListener('click', function(){
+    state.step = 0; render();
+  });
+  document.getElementById('scenario').addEventListener('change', function(e){
+    state.scenario = e.target.value; state.step = 0; render();
+  });
+
+  render();
+
+  // —— 自适应高度：把本演示的实际高度 postMessage 给父页 ——
+  function reportHeight(){ try { parent.postMessage({ __vizHeight: Math.ceil(document.documentElement.scrollHeight) }, '*'); } catch (e) {} }
+  reportHeight();
+  setTimeout(reportHeight, 150); setTimeout(reportHeight, 600);
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+  if (window.MutationObserver) { new MutationObserver(reportHeight).observe(document.body, { childList: true, subtree: true, attributes: true }); }
+})();
+</script>
+</body>
+</html>
