@@ -5,6 +5,9 @@
 # ZCode 会话 / 缓存
 .zcode/
 
+# mimosa 插件会话状态（hook-state/hook-status）
+.mimosa/
+
 # OS
 .DS_Store
 Thumbs.db
