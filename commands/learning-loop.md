@@ -30,27 +30,11 @@ $ARGUMENTS
 3. 不修改任何文件，不进入学习流程。
 
 ### 分支 D：参数是 `upgrade`（`/learning-loop upgrade`）
-**升级 skill 本体 + 迁移工作区**，一步到位。只做"拉取 + 复制 + 标记"，绝不破坏用户数据、不进入学习流程。
+**升级 skill 本体 + 迁移工作区**。完整协议以 skill 的 `references/upgrade.md` 为**唯一权威来源**——读它并按三步执行，不要凭记忆改写步骤：
 
-**第 1 步：拉取最新 skill（更新工具本体）**
-1. 定位 skill 安装目录 `skillDir = ~/.agents/skills/learning-loop`。
-2. 判断是否 git 克隆（`$skillDir/.git` 是否存在）：
-   - **是克隆**：读当前 `version`（`$skillDir/SKILL.md` frontmatter）记为 `旧版本`；在 `$skillDir` 执行 `git pull --ff-only`（远端 https://github.com/kaikaixiaotian/learning-loop.git ）。
-   - **不是克隆**（旧式复制安装）：把 `$skillDir` 备份为 `$skillDir.bak.<时间戳>` 后删除，重新 `git clone https://github.com/kaikaixiaotian/learning-loop.git "$skillDir"`；`旧版本 = "(复制式安装)"`。
-3. **同步命令自身**：把 `$skillDir/commands/learning-loop.md` 复制到 `~/.zcode/commands/learning-loop.md`。
-4. 若 `git pull --ff-only` 因本地改动/分叉失败，**不要 `--force` 或强制覆盖**，把 git 错误原样转告用户并停止，**不要**继续第 2 步。
-
-**第 2 步：迁移工作区（让旧工作区后续生成遵循新规范）**
-读 `references/upgrade.md`：
-1. 扫描当前目录所有 `*-learning/meta.json`。
-2. 对每个写入 `schema_version`（取更新后的 skill `version`）+ `upgraded_at` + history 事件。
-3. **不改任何已有文件**（旧测验 HTML 缺 quizKey/restoreData 等也维持原样；批改时 AI 回退读题判断，仍能工作）。
-4. 后续新生成的章节/测验自动按当前规范（quizKey + restoreData + restore JS + feedback 槽位）。
-
-**第 3 步：报告**
-- skill：读更新后的 `version` 记为 `新版本`；`新版本 != 旧版本` → 「✅ skill 已从 v旧版本 升级到 v新版本」，相同 → 「✅ skill 已是最新 v新版本」。
-- 工作区：列出迁移的 workspace 数（或「当前目录无学习工作区，仅升级 skill 本体」）。
-- 提示「请新开一个会话以加载最新 skill」。
+1. **更新 skill 本体（必须先做）**：定位安装目录 `skillDir = ~/.agents/skills/learning-loop`。有 `.git` → 在 `$skillDir` 执行 `git pull --ff-only`（远端 https://github.com/kaikaixiaotian/learning-loop.git ）；无 `.git`（复制式旧安装）→ 备份 `$skillDir.bak.<时间戳>` 后重新 `git clone` 该远端。**pull 失败（本地改动/分叉）时原样转告 git 错误并停止，禁止 force/强制覆盖，不要继续第 2 步。** 随后把 `$skillDir/commands/learning-loop.md` 复制到 `~/.zcode/commands/learning-loop.md`（同步命令自身）。
+2. **迁移工作区**：按 upgrade.md 给当前目录每个 `*-learning/meta.json` 写 `schema_version`（取更新后的 skill `version`）+ `upgraded_at` + history 事件。**不改任何已有文件**（旧测验 HTML 缺 quizKey/restoreData 等也维持原样；批改时 AI 回退读题判断，仍能工作）。
+3. **报告**：读更新后的 `version` 记为 `新版本`；`新版本 != 旧版本` → 「✅ skill 已从 v旧版本 升级到 v新版本」，相同 → 「✅ skill 已是最新 v新版本」；列出迁移的 workspace 数（或「当前目录无学习工作区，仅升级 skill 本体」）；提示「请新开一个会话以加载最新 skill」。
 
 ## 通用约束（所有分支都要遵守）
 

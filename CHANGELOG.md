@@ -3,6 +3,12 @@
 记录 `learning-loop` skill 的版本变更。版本号以 `SKILL.md` frontmatter 的 `version` 字段为**单一来源**。
 参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.4.1] - 2026-08-14
+
+### 修复
+- **`learning-loop upgrade` 被误判为"仅工作区迁移"**：完整升级协议（先 `git pull` 更新 skill 本体 + 同步命令文件，再迁移工作区）此前只写在 slash command 文件里；用户不走斜杠命令、直接输入 `learning-loop upgrade` 时，模型只加载 SKILL.md，而 SKILL.md 的索引与 `references/upgrade.md` 都只描述工作区迁移（upgrade.md 甚至自述"本文件只覆盖第 2 步"），导致每次都跳过 skill 更新。现收敛为单一来源：`references/upgrade.md` 重写为完整三步协议（更新本体 → 迁移工作区 → 报告）；SKILL.md 的触发描述、参考索引与新增「Upgrade requests」正文路由都明确"升级 = 先更新 skill 本体，绝非仅迁移工作区"；命令文件分支 D 改为引用同一协议。
+- `schema_version` 标记值从日期改为取 skill frontmatter `version`（与命令文件口径一致）。
+
 ## [1.4.0] - 2026-08-14
 
 ### 变更（教学规范 2.0：取消类比 → 全覆盖交互动画 + 断言对齐）

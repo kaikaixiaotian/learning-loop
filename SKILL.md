@@ -1,7 +1,7 @@
 ---
 name: learning-loop
-version: 1.4.0
-description: Guide a user through AI-assisted mastery of any skill or domain via a structured, self-paced closed-loop learning system. Use whenever the user wants to learn, study, be taught, or get trained on a topic — including phrases like "教我学习 X"、"我想学 X"、"帮我掌握 X"、"学习计划"、"训练我"、"带我学"、"tutor me on X"、"I want to learn X". Triggers on first run (initializes a plan) AND on every subsequent run (auto-resumes from saved progress). Also use when the user submits a quiz (answers.json downloaded from an HTML quiz form) and expects grading + next steps.
+version: 1.4.1
+description: Guide a user through AI-assisted mastery of any skill or domain via a structured, self-paced closed-loop learning system. Use whenever the user wants to learn, study, be taught, or get trained on a topic — including phrases like "教我学习 X"、"我想学 X"、"帮我掌握 X"、"学习计划"、"训练我"、"带我学"、"tutor me on X"、"I want to learn X". Triggers on first run (initializes a plan) AND on every subsequent run (auto-resumes from saved progress). Also use when the user submits a quiz (answers.json downloaded from an HTML quiz form) and expects grading + next steps. Also use when the user asks to upgrade or update the learning-loop skill itself — "learning-loop upgrade", "/learning-loop upgrade", 升级/更新 learning-loop.
 ---
 
 # Learning Loop
@@ -19,7 +19,7 @@ You run a **closed-loop learning system**: the AI teaches, the user proves maste
 - `references/visualization.md` — demos are the primary intuition vehicle (analogies are banned): default-on per-KP rule with narrow waivers, the "真正的演示" quality bar (mechanism itself, boundary-case branch coverage, user-operable), and the JS static-verification flow. Read before any chapter generation.
 - `references/curriculum-research.md` — how to pull a canonical learning path from authoritative sources and adapt it to the user's baseline, instead of inventing the plan from AI memory. Read before any master-plan or new-stage generation.
 - `references/html-format.md` — all user-facing files are HTML (read-mode + quiz-form), the answers.json submission mechanism, and JS verification. Read before generating any chapter doc, master plan, or quiz.
-- `references/upgrade.md` — how to mark an old workspace upgraded so subsequent generation follows the current spec (existing files left untouched). Read when the user runs `/learning-loop upgrade`.
+- `references/upgrade.md` — the full upgrade protocol: **update the skill itself from GitHub first** (git pull in the install dir + sync the command file), then mark existing workspaces so subsequent generation follows the current spec (existing files left untouched). Read when the user runs `/learning-loop upgrade` or asks to 升级/更新 the learning-loop skill.
 
 ## The loop at a glance
 
@@ -49,6 +49,16 @@ On every invocation, the **first action** is to look for existing learning works
 - **Exactly one found** → read its `meta.json` + `wiki/progress.md`, tell the user where they left off (stage/chapter/phase in one line), and offer to continue. Do NOT re-initialize. (User chose auto-resume.)
 - **Multiple found** → list them by topic with a one-line status each, and ask the user which to resume. Do not guess. This handles the "学完 React 再学 Python" case where two workspaces coexist.
 - **Found, but the user names a *different* topic** → they want a new workspace. Confirm, then go to Initialization. Never silently resume a different-topic workspace just because it exists.
+
+## Upgrade requests (skill update — not the learning flow)
+
+When the user's message is about upgrading **the skill itself** — `learning-loop upgrade`, `/learning-loop upgrade`, 升级/更新 learning-loop — do NOT route through First-run/resume and do NOT treat it as a workspace-only migration. This is a maintenance request; without pulling the latest skill files first, the "current spec" isn't actually installed. Read `references/upgrade.md` and follow it end-to-end:
+
+1. **Update the skill itself** (mandatory, first): `git pull --ff-only` in the install dir `~/.agents/skills/learning-loop/` (re-clone if it's not a git install; on pull failure report the error and stop — never force), then sync `commands/learning-loop.md` → `~/.zcode/commands/learning-loop.md`.
+2. **Migrate workspaces**: stamp each `*-learning/meta.json` with `schema_version` (the new skill version) + `upgraded_at` + a history event. Existing files are never touched.
+3. **Report** old → new version, workspaces migrated, and remind the user to start a fresh session to load the updated skill.
+
+Do not enter the learning loop during upgrade; the user runs `/learning-loop` separately to continue learning.
 
 ## Directory layout
 
