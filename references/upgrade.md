@@ -40,8 +40,8 @@ Nothing about existing files. But the AI's behavior for **new** content in this 
 
 - New chapter docs → read-mode HTML per **spec 2.0**: 知识点清单 + 考点断言 inventory (each KP with 3–6 testable assertions), six-element concepts with **② 直观演示** (embedded interactive demo + 观察要点 — **analogies are banned**), per-concept **检查点** (`<details>` self-test), anti-wall-of-text formatting (① per-claim list items, ⑤ case `<ul>`, ⑥ comparison table).
 - New demos → **default-on per concept** (expect 5–8 per chapter; waiver only for pure-recall KPs with a recorded reason), meeting the "真正的演示" quality bar: mechanism itself visible per step, boundary-case branch coverage, user-operable.
-- New quizzes → quiz-form HTML with `quizKey` (+ per-question `assert` field) + `restoreData` slot + restore JS + per-question `feedback` slots + `gradingSummary`; every `data-assert` must resolve to the chapter's 断言清单 at generation time.
-- New stage-total → web-research-grounded, six types, citations.
+- New quizzes → quiz-form HTML with `quizKey` (+ per-question `assert` field) + `restoreData` slot + restore JS + per-question `feedback` slots + `gradingSummary`; every `data-assert` must resolve to the chapter's 断言清单 at generation time; v1.5 composition — objective items only (选择+填空), no textarea 大题 outside the stage-total's single optional 文字综合题.
+- New stage-total → web-research-grounded, objective-only (选择+填空, ≤1 文字综合题), citations.
 - New stage transitions → stage-handoff (fresh session).
 - Extra delivery gates: assertion-coverage check, formatting gate, and a `--vscode-`/`icube-` contamination guard (a generated chapter once shipped with ~1900 lines of accidentally-pasted IDE CSS).
 

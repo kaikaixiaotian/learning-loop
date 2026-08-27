@@ -7,7 +7,7 @@ Every file the learning-loop system writes follows one of these templates. Keep 
 All **user-facing** artifacts are now standalone **HTML** files, not markdown:
 - **Chapter doc** → `chapters/stageN-chXX-<slug>.html` (read-mode)
 - **Master plan** → `plan/master-plan.html` (read-mode)
-- **Baseline, chapter-quiz, stage-total-quiz** → `.html` quiz-forms (radio/checkbox/textarea + submit button → answers.json)
+- **Baseline, chapter-quiz, stage-total-quiz** → `.html` quiz-forms (radio/checkbox/text inputs + submit button → answers.json; v1.5: objective items only, textarea only in the stage-total's single optional 文字综合题)
 
 The two authoritative HTML skeletons are at the **end of this file** (sections "read-mode html skeleton" and "quiz-form html skeleton"). Generate from those.
 
@@ -22,43 +22,29 @@ Located at `00-baseline/baseline-assessment.md`. The user fills this in and uplo
 ```markdown
 # 基础测评 — <topic>
 
-> 说明：本测评用于定位你当前的起点，**不影响通过与否**。请尽力作答；完全不会的题写「不知道」即可。所有题型都将贯穿你后续的学习，请熟悉它们的格式。
+> 说明：本测评用于定位你当前的起点，**不影响通过与否**。全部为选择/填空题，点选或填入即可，几分钟就能完成；完全不会的题可以不选。
 
 ## 个人背景
 - 你之前接触过 <topic> 吗？到什么程度？（自学/课程/工作/完全没有）
 - 你学这个的目标是什么？（如：能解决实际问题 / 通过面试 / 能教别人）
 - 每周可投入学习时间？
 
-## 一、选择题（选择 / 多选）
-1. (单选) ……？
+## 一、选择题（单选 / 多选）
+1. (选择题, 1分) ……？
    - A. …
    - B. …
    - C. …
    - D. …
    - **你的答案：**
+2. (选择题[多选], 2分) ……？
+   - A. … / B. … / C. … / D. …
 
 ## 二、填空题
-1. ……中的关键概念是 _____。
-   - **你的答案：**
-
-## 三、实战题
-1. （给定具体任务/数据/代码场景）请写出你的解决步骤或代码。
-   - **你的答案：**
-
-## 四、模拟题
-1. （场景角色扮演，如「假设你是 X，面对 Y 情况，你会如何处理？」）
-   - **你的答案：**
-
-## 五、算法 / 推导题
-1. （推导一个结论 / 设计一个流程 / 写出算法步骤）
-   - **你的答案：**
-
-## 六、高难度综合题
-1. （跨章节综合、开放性、需要多步推理）
+1. (填空题, 1分) ……中的关键概念是 _____。
    - **你的答案：**
 ```
 
-Baseline should have ~15–25 questions total, spread so easy and hard both appear. The goal is to locate the user's level, not to grade harshly.
+Baseline contains **ONLY 选择 + 填空 items** — no written long-form questions (v1.5 rule; the user answers fast instead of typing essays). Question count follows coverage of the domain's diagnostic dimensions across an easy → hard ladder (practical/synthesis probes get converted into objective form — code-output choice, scenario best-action single-choice, combination multi-select); there is no fixed quota, just make sure both easy and hard items appear so you can locate the user's level.
 
 ## master-plan.md (总目录)
 
@@ -192,34 +178,21 @@ Calibration rule: if `baseline_score` is low, this doc leans harder on ②的观
 ```markdown
 # 章节测验 — 阶段< N >·章节< XX > <title>
 
-> 通过线：与计划测验合并 ≥80%。填写后上传本文件。
-> 覆盖六大题型，请逐题作答。
+> 通过线：与计划测验合并 ≥80%。全部为选择/填空题，点选或填入即可。
 > 每题标注「考点: KP-x·Ay」——对应章节文档「知识点清单」下的**断言**（Ax）。出题前 AI 已核对所有考点都映射到已讲授的断言；若你发现某题考点映射不到断言，按超纲规则不计分（见批阅区说明）。
 
 ## 一、选择题
 1. (选择题, 1分) [考点: KP-2·A3] …
    - A. … / B. … / C. … / D. …
    - **你的答案：**
-   - **理由：**（简述）
+2. (选择题[多选], 2分) [考点: KP-1·A2, KP-3·A1] ……（多选，正确组合跨多个考点）
+   - A. … / B. … / C. … / D. …
+   - **你的答案：**
+3. (选择题, 2分) [考点: KP-3·A1] （给代码片段问输出/找 bug 行/辨析实现）
+   - **你的答案：**
 
 ## 二、填空题
 1. (填空题, 1分) [考点: KP-1·A2] … _____ …
-   - **你的答案：**
-
-## 三、实战题
-1. (实战题, 4分) [考点: KP-3·A1] （明确任务 + 输入 + 期望输出格式）
-   - **你的答案：**
-
-## 四、模拟题
-1. (模拟题, 4分) [考点: KP-4·A2] （场景：…… 你会如何 ……）
-   - **你的答案：**
-
-## 五、算法 / 推导题
-1. (算法题, 5分) [考点: KP-2·A4] （请推导/设计 ……）
-   - **你的答案：**
-
-## 六、高难度综合题
-1. (综合题, 6分) [考点: KP-1·A2, KP-3·A1] （综合 …… 与 …… 解决 ……）
    - **你的答案：**
 
 ---
@@ -227,12 +200,14 @@ Calibration rule: if `baseline_score` is low, this doc leans harder on ②的观
 | 题号 | 类型 | 考点 | 正确？ | 计分？ | 失分点 |
 |------|------|------|--------|--------|--------|
 | 1 | 选择 | KP-2·A3 |  | 是 |  |
-| 2 | 填空 | KP-1·A2 |  | 是 |  |
-| 3 | 实战 | KP-3·A1 |  | 是 |  |
-| … | | | | |  |
+| 2 | 多选 | KP-1·A2,KP-3·A1 |  | 是 |  |
+| 3 | 填空 | KP-1·A2 |  | 是 |  |
+…
 （"计分？"列：是=正常计分；**超纲=不计分**——考点映射不到章节断言清单时填此项，该题从分母中剔除，见 grading.md）
 **章节测验得分：0.XX（X/Y 分，Y=计分题总分）**（若含超纲题，注明：已剔除 N 道超纲题，另见补讲补考说明）
 ```
+
+Chapter quizzes contain **ONLY 选择 + 填空 items** (v1.5 rule) — no 实战/模拟/算法/综合 sections, no textarea questions. Depth lives in the distractor design (code-output choices, scenario best-action, cross-KP combination multi-selects) and in question count driven by full coverage of the 断言清单 — there is no fixed min/max; add objective items until every worth-testing assertion is covered, ordered easy → hard.
 
 ## plan-quiz.md — `quizzes/stageN-chXX-plan-quiz.md`
 
@@ -271,61 +246,42 @@ The live round is the experience; this file is the receipt. Both matter — chat
 
 ## stage-total-quiz.md — `quizzes/stageN-total-quiz.md`
 
-Comprehensive quiz covering **every chapter** in the stage. Generated when the stage's last chapter passes (not at stage start). **Volume is the point here** — unlike the small chapter quizzes, the stage-total must be substantial because it gates stage advancement. **Must be web-research-augmented** (see `references/web-research.md`): the stage-total planner dispatches a web-research subagent first, then composes the quiz from the returned brief.
+Comprehensive quiz covering **every chapter** in the stage. Generated when the stage's last chapter passes (not at stage start). It must be substantial because it gates stage advancement. **Must be web-research-augmented** (see `references/web-research.md`): the stage-total planner dispatches a web-research subagent first, then composes the quiz from the returned brief.
 
-**Volume rule** (the user's explicit requirement):
-- **Minimum: 2–3 questions per chapter** in the stage, spread across the six types. A 4-chapter stage → ≥12 questions; a 6-chapter stage → ≥15.
-- **Each of the six types must have ≥2 questions** (not just ≥1 like chapter quizzes).
-- **≥2 综合** that each span ≥2 chapters.
-- Questions should lean into the stage's cumulative weak spots recorded in chapter wikis.
+**Composition rules** (v1.5):
+- Objective items only — 选择（单/多选）+ 填空 across all chapters. Volume follows content breadth (~2–4 objective questions per chapter is typical); the driver is covering every chapter's key assertions plus the stage's cumulative weak spots, not a quota.
+- Include **≥2 组合多选题 whose correct sets span ≥2 chapters' assertions** — the objective replacement for the old cross-chapter 综合 quota.
+- At most **1 textarea 文字综合题** spanning ≥2 chapters (5–8 分, rubric-graded; omitting it entirely is fine).
 
 ```markdown
 # 阶段总测验 — 阶段< N > <stage name>
 
-> 覆盖本阶段全部 <M> 个章节。通过线 ≥80%。填写后上传本文件。
-> 六大题型齐全且每类 ≥2 题；本测验经网络权威源数据增强，每题标注出处。
+> 覆盖本阶段全部 <M> 个章节。通过线 ≥80%。全部为选择/填空题（末尾至多 1 道可选文字综合题）。
+> 本测验经网络权威源数据增强，每题标注出处。
 
 > [数据增强状态]  ← 由 web-research 子agent 的结果决定，三选一：
 >   ✅ 已增强：全部题目附 [出处: url]
 >   ⚠️ 部分增强：标注的题目已验证，[未验证] 的题目需核对官方文档
 >   ⚠️ 降级：网络不可达，本测验未经外部验证，事实准确性可能偏低
 
-## 一、选择题（≥2 题）
+## 一、选择题
 1. (选择题, 1分) …… [出处: <url>]
    - A. … / B. … / C. … / D. …
    - **你的答案：**
-   - **理由：**
-2. (选择题, 1分) …… [出处: <url>]
+2. (选择题[多选], 2分) ……（跨章组合多选：正确选项的组合跨第 X 与第 Y 章） [出处: <url>, <url2>]
+   - A. … / B. … / C. … / D. …
+   - **你的答案：**
+3. (选择题, 2分) ……（代码/配置片段辨析） [出处: <url>]
    - **你的答案：**
 
-## 二、填空题（≥2 题）
-1. (填空题, 2分) …… [出处: <url>]
+## 二、填空题
+1. (填空题, 2分) …… _____ …… [出处: <url>]
    - **你的答案：**
-2. (填空题, 2分) …… [未验证]   ← 仅在降级路径出现
-   - **你的答案：**
-
-## 三、实战题（≥2 题，基于真实场景/真实 API/真实数据集）
-1. (实战题, 5分) ……（综合多个章节的实操任务） [出处: <url>]
-   - **你的答案：**
-2. (实战题, 5分) …… [出处: <url>]
+2. (填空题, 2分) …… _____ …… [未验证]   ← 仅在降级路径出现
    - **你的答案：**
 
-## 四、模拟题（≥2 题，跨章节场景）
-1. (模拟题, 5分) …… [出处: <url>]
-   - **你的答案：**
-2. (模拟题, 5分) …… [出处: <url>]
-   - **你的答案：**
-
-## 五、算法 / 推导题（≥2 题）
-1. (算法题, 6分) …… [出处: <url>]
-   - **你的答案：**
-2. (算法题, 6分) …… [出处: <url>]
-   - **你的答案：**
-
-## 六、高难度综合题（≥2 题，每题跨 ≥2 章节）
-1. (综合题, 8分) ……（必须跨 ≥2 个章节综合） [出处: <url>, <url2>]
-   - **你的答案：**
-2. (综合题, 8分) …… [出处: <url>]
+## 三、文字综合题（至多 1 道，可不答；没有则删除本节）
+1. (综合题, 6分) ……（跨 ≥2 章节：给出情境，请写出你的完整方案与理由） [出处: <url>]
    - **你的答案：**
 
 ---
@@ -339,8 +295,8 @@ Comprehensive quiz covering **every chapter** in the stage. Generated when the s
 | 题号 | 类型 | 正确？ | 出处/验证状态 | 失分点 |
 |------|------|--------|--------------|--------|
 | 1 | 选择 |  | [出处: url] |  |
-| 2 | 填空 |  | [未验证] |  |
-| 3 | 实战 |  | [出处: url] |  |
+| 2 | 多选 |  | [出处: url] |  |
+| 3 | 填空 |  | [未验证] |  |
 …
 **阶段总测验得分：0.XX（X/Y 分）** · **判定：通过 / 未通过**
 ```
@@ -873,7 +829,7 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 <h1>章节测验 — 阶段< N >·章节< XX > &lt;title&gt;</h1>
 <div class="info">
   通过线：与计划测验合并 ≥80%。每题标注考点 KP。<br>
-  <strong>作答方式</strong>：选择题点选项，问答/实战题在输入框作答。完成后点底部「提交答案」，会自动下载 <code>&lt;quiz&gt;-answers.json</code>，然后在聊天里告诉 AI「做好了」。
+  <strong>作答方式</strong>：全部为选择/填空题——选择题点选项，填空题在输入框填入。完成后点底部「提交答案」，会自动下载 <code>&lt;quiz&gt;-answers.json</code>，然后在聊天里告诉 AI「做好了」。
 </div>
 
 <form id="quizForm" action="">
@@ -907,37 +863,17 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
     <div class="feedback" id="fb-q3"></div>
   </fieldset>
 
-  <h2>三、实战题</h2>
-  <fieldset class="question" data-qid="q4" data-kp="KP-3" data-assert="KP-3-A1" data-type="实战" data-points="4">
-    <legend>4. &lt;题干：明确任务+输入+期望输出&gt;</legend>
-    <div class="qmeta">[考点: KP-3·A1] · (实战题, 4分)</div>
-    <textarea id="q4" placeholder="在此作答（可换行）"></textarea>
+  <!-- ⚠️ v1.5 题量规则：baseline / 章节测验到此为止——只允许选择+填空，禁止追加任何 textarea 大题。
+       唯一例外：阶段总测验可在末尾放至多 1 道文字综合题（data-type="综合"，rubric 批改），示例：
+
+  <h2>三、文字综合题（至多 1 道，可不答）</h2>
+  <fieldset class="question" data-qid="q4" data-kp="KP-1,KP-3" data-assert="KP-1-A2,KP-3-A1" data-type="综合" data-points="6">
+    <legend>4. &lt;跨章情境：写出完整方案与理由&gt;（可不答）</legend>
+    <div class="qmeta">[考点: KP-1·A2, KP-3·A1] · (综合题, 6分)</div>
+    <textarea id="q4" placeholder="在此作答；不答也不影响其他题得分，但本题计 0 分"></textarea>
     <div class="feedback" id="fb-q4"></div>
   </fieldset>
-
-  <h2>四、模拟题</h2>
-  <fieldset class="question" data-qid="q5" data-kp="KP-4" data-assert="KP-4-A2" data-type="模拟" data-points="4">
-    <legend>5. &lt;场景：… 你会如何 …&gt;</legend>
-    <div class="qmeta">[考点: KP-4·A2] · (模拟题, 4分)</div>
-    <textarea id="q5" placeholder="在此作答"></textarea>
-    <div class="feedback" id="fb-q5"></div>
-  </fieldset>
-
-  <h2>五、算法 / 推导题</h2>
-  <fieldset class="question" data-qid="q6" data-kp="KP-2" data-assert="KP-2-A4" data-type="算法" data-points="5">
-    <legend>6. &lt;题干：请推导/设计 …&gt;</legend>
-    <div class="qmeta">[考点: KP-2·A4] · (算法题, 5分)</div>
-    <textarea id="q6" placeholder="在此作答"></textarea>
-    <div class="feedback" id="fb-q6"></div>
-  </fieldset>
-
-  <h2>六、高难度综合题</h2>
-  <fieldset class="question" data-qid="q7" data-kp="KP-1,KP-3" data-assert="KP-1-A2,KP-3-A1" data-type="综合" data-points="6">
-    <legend>7. &lt;题干：综合 … 与 … 解决 …&gt;</legend>
-    <div class="qmeta">[考点: KP-1·A2, KP-3·A1] · (综合题, 6分)</div>
-    <textarea id="q7" placeholder="在此作答"></textarea>
-    <div class="feedback" id="fb-q7"></div>
-  </fieldset>
+  -->
 
   <div class="controls">
     <button type="button" id="submitBtn">提交答案</button>

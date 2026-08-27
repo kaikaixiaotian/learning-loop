@@ -6,7 +6,7 @@ The plan-quiz is the ONLY exception — it stays as live chat + a post-hoc markd
 
 ## Why HTML, not markdown
 
-Markdown quiz files force the user to edit raw text (`**你的答案：** ___`), which is error-prone and unpleasant. HTML lets the user **click radio buttons for single-choice, tick checkboxes for multi-choice, and type into textareas for written answers** — the interaction matches the question type. Read-mode docs (chapter docs, master plan) also render far better as styled HTML than as raw markdown. The cost is generation complexity, managed by the static-check flow below.
+Markdown quiz files force the user to edit raw text (`**你的答案：** ___`), which is error-prone and unpleasant. HTML lets the user **click radio buttons for single-choice, tick checkboxes for multi-choice, and type short answers into text inputs** — the interaction matches the question type. Read-mode docs (chapter docs, master plan) also render far better as styled HTML than as raw markdown. The cost is generation complexity, managed by the static-check flow below.
 
 ## Two HTML modes
 
@@ -22,8 +22,8 @@ User **fills a form and submits**. This is where HTML earns its keep — interac
 |---------------|--------------|-------|
 | 选择题（单选） | `<input type="radio" name="q1" value="A/B/C/D">` | one radio group per question |
 | 选择题（多选） | `<input type="checkbox" name="q2" value="A/B/C/D">` | checkboxes share a name; multiple values |
-| 填空题 | `<input type="text" id="q3">` or `<textarea>` for multi-blank | short answer |
-| 实战/模拟/算法/综合 | `<textarea id="qN" rows="6">` | long-form answer |
+| 填空题 | `<input type="text" id="q3">` (or `<textarea>` for multi-blank) | short answer |
+| 文字综合题（仅 stage-total） | `<textarea id="qN" rows="6">` | at most ONE such question per stage-total; never in baseline/chapter quizzes |
 
 Every question sits in a `<fieldset class="question" data-qid="q1" data-kp="KP-2" data-assert="KP-2-A3" data-type="选择" data-points="1">`. The `data-*` attributes carry the metadata that used to be inline md tags (`[考点: KP-2·A3]`, `(选择题, 1分)`) — the AI reads them from the HTML when grading, and they drive the per-question display. `data-assert` lists the assertion IDs the question tests (comma-separated when multiple); every ID MUST exist in the chapter doc's 断言清单, or the question is 超纲 (see `references/grading.md`).
 
@@ -120,7 +120,7 @@ The quiz HTML MUST contain a `<script id="quizKey" type="application/json">` tag
 **Field rules:**
 - `qid` / `type` / `kp` / `assert` / `points` — mirror the `<fieldset>` attributes. `assert` lists the assertion IDs the question tests (comma-separated when multiple, format `KP-2-A3`); every ID must exist in the chapter doc's 断言清单 (`kp-asserts`) — this is what the 超纲 check keys on (older quizzes predating `assert` fall back to `kp`-level checks).
 - `answer` — for objective types (选择/多选/填空): the single correct value (string for radio/填空, array for checkbox). Use `accept` for multiple acceptable phrasings on 填空.
-- `rubric` — for subjective types (实战/模拟/算法/综合): NOT a single answer, but scoring dimensions + key points. The AI compares the user's answer against these dimensions, NOT against a fixed string.
+- `rubric` — for subjective types (实战/模拟/算法/综合). v1.5: new stage-totals use this ONLY for their single optional 文字综合题（data-type=综合）; 实战/模拟/算法 entries persist in legacy quizzes. Not a single answer, but scoring dimensions + key points. The AI compares the user's answer against these dimensions, NOT against a fixed string.
 - Every question must have exactly one of `answer` or `rubric` (never both).
 - The array order matches the question order in the HTML (q1, q2, q3...).
 

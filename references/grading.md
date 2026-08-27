@@ -1,6 +1,6 @@
 # Grading Rubric
 
-Grading has two hard parts: **subjective question types** (实战/模拟/算法/综合) can't be marked right/wrong like 选择填空, and the **combined pass/fail score** blends two quizzes with different characters. This file makes both deterministic so the same answers grade the same way every time.
+Grading has two hard parts: **subjective questions** can't be marked right/wrong like 选择填空 — as of v1.5 they appear only in plan-quizzes (live chat) and the stage-total's single optional 文字综合题 — and the **combined pass/fail score** blends two quizzes with different characters. This file makes both deterministic so the same answers grade the same way every time.
 
 Read this before grading any chapter quiz, plan-quiz, or stage-total.
 

@@ -111,8 +111,7 @@ TEACHING DEPTH RULES (non-negotiable):
   derivation).
 
 Quiz rules (NON-NEGOTIABLE) — paste inline:
-<paste the floor rules from references/quiz-types.md — all 6 types, ≥1 each,
-选择+填空 ≤50%, ≥1 实战, ≥1 综合>
+<paste the v1.5 floor rules from references/quiz-types.md — form quiz contains ONLY 选择（单/多选）+ 填空, ZERO textarea 主观大题; convert practical/scenario/synthesis probes into objective items with misconception-driven distractors (code-output choice, scenario best-action, combination multi-select); NO fixed question count — coverage of the 断言清单 drives volume with an easy→hard ladder>
 
 COVERAGE SELF-CHECK (mandatory before returning):
 - Every quiz question MUST carry `data-kp` AND `data-assert` (assertion IDs,
@@ -189,14 +188,16 @@ VISUALIZATION (default ON — waiver only for pure-recall KPs):
 QUIZ HTML RULES (the quiz is now a form, not md — see references/html-format.md):
 - Use the quiz-form html skeleton from references/templates.md verbatim structure.
 - Every question is <fieldset class="question" data-qid="qN" data-kp="KP-x"
-  data-assert="KP-x-Ay[,KP-x-Az]" data-type="选择|填空|实战|模拟|算法|综合"
+  data-assert="KP-x-Ay[,KP-x-Az]" data-type="选择|多选|填空"
   data-points="N">. Every assertion ID in data-assert MUST exist in the
-  chapter's 断言清单.
+  chapter's 断言清单. (Legacy enum values 实战/模拟/算法/综合 exist for old files;
+  new chapter quizzes never use them.)
 - Radio name="qN" value="A/B/C/D"; checkbox name="qN" value="A/B/C/D";
-  text/textarea id="qN".
+  text input id="qN". NO textarea questions in baseline/chapter quizzes —
+  textarea is reserved for the stage-total's single optional 文字综合题.
 - Copy the canonical submit JS from references/html-format.md verbatim — do NOT
   rewrite it.
-- **FILL the `<script id="quizKey">` tag with the correct answers** (mandatory — this is what the grader reads instead of regex-parsing the HTML). Use the schema from references/html-format.md: for each question, include `qid`/`type`/`kp`/`assert`/`points` + either `answer` (objective types) or `rubric` (subjective types). Every qid must match a `<fieldset data-qid>` 1:1. The quizKey must be valid JSON — verify with JSON.parse before returning.
+- **FILL the `<script id="quizKey">` tag with the correct answers** (mandatory — this is what the grader reads instead of regex-parsing the HTML). Use the schema from references/html-format.md: for each question, include `qid`/`type`/`kp`/`assert`/`points` + `answer` (objective types; use `accept` for multi-phrasing 填空). Rubric entries apply only to the stage-total's optional written item. Every qid must match a `<fieldset data-qid>` 1:1. The quizKey must be valid JSON — verify with JSON.parse before returning.
 
 Include in your return summary a visualization_decisions block (every KP appears — demo with pattern+branches, or reasoned waiver) and a viz_files_written list per references/visualization.md:
   visualization_decisions:
@@ -243,10 +244,11 @@ Produce (all HTML — see references/html-format.md):
 3. <abs path to quizzes/stage<N+1>-ch01-quiz.html> — its quiz (quiz-form)
 
 Templates and quiz floor rules (paste inline):
-<paste read-mode HTML skeleton + quiz-form HTML skeleton + quiz floor rules +
-the TEACHING DEPTH RULES block from Job 2 — assertion inventory, ② demo slot,
-formatting rules, analogy ban, checkpoints — the stage's first chapter follows
-the same spec 2.0>
+<paste read-mode HTML skeleton + quiz-form HTML skeleton + the v1.5 quiz floor
+rules from references/quiz-types.md (objective-only: 选择+填空, no textarea
+大题; 断言清单-driven volume) + the TEACHING DEPTH RULES block from Job 2 —
+assertion inventory, ② demo slot, formatting rules, analogy ban, checkpoints —
+the stage's first chapter follows the same spec 2.0>
 
 QUIZ HTML RULES (same as Job 2 — the quiz is a form):
 - Every question is <fieldset class="question" data-qid="qN" data-kp="KP-x"
@@ -283,7 +285,7 @@ After it returns: **re-verify the HTML yourself** (do not trust the subagent's s
 
 ## Job 4: Web researcher (mandatory before every stage-total quiz)
 
-**Purpose:** ground the stage-total quiz in real facts from authoritative sources, so its larger volume (≥12 questions) doesn't drift into AI-confident-but-wrong territory.
+**Purpose:** ground the stage-total quiz in real facts from authoritative sources, so its substantial volume (a full-stage gate quiz) doesn't drift into AI-confident-but-wrong territory.
 
 **Input to pass:** the stage's full scope — all chapter topics + the cumulative weak spots from chapter wikis. The researcher does NOT write the quiz; it returns a brief that the stage-total planner composes into questions.
 
@@ -456,8 +458,8 @@ Steps 2 and 4 are sequential, not parallel — the planner needs the wiki as inp
 
 ## What to do if a subagent output is weak
 
-If a returned chapter doc or quiz violates the floor rules (e.g. missing a type, or 选择-heavy), **do not hand it to the user as-is**. Either:
+If a returned chapter doc or quiz violates the floor rules (e.g. contains a textarea 大题 in a baseline/chapter quiz, or under-covers the 断言清单), **do not hand it to the user as-is**. Either:
 - Re-dispatch with a sharper prompt naming the specific defect, or
 - Fix the specific defect inline yourself.
 
-The user never sees a quiz that breaks the six-type rule.
+The user never sees a quiz that breaks the objective-only rule (baseline/chapter: 选择+填空 only; stage-total: +≤1 文字综合题).
