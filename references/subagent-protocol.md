@@ -1,6 +1,6 @@
 # Subagent Protocol
 
-Three jobs in the learning loop are delegated to subagents via the Agent tool. Subagents run isolated — they cannot see this conversation, so every dispatch must be **self-contained**: include the templates, the wiki input, and the exact output path.
+Six jobs in the learning loop are delegated to subagents via the Agent tool. Subagents run isolated — they cannot see this conversation, so every dispatch must be **self-contained**: include the templates, the wiki input, and the exact output path.
 
 ## When to use a subagent (and when not)
 
@@ -11,6 +11,7 @@ Three jobs in the learning loop are delegated to subagents via the Agent tool. S
 | Plan a whole new stage | ✅ yes | Larger planning task |
 | **Fetch authoritative web data for stage-total** | ✅ yes | Volume + factual rigor required; isolated fetch keeps main thread lean |
 | **Fetch canonical learning path + per-chapter cards (curriculum)** | ✅ yes | Grounding the master plan in real curricula; the biggest anti-"messy plan" fix |
+| **Fetch real exam questions from user-provided links (题库采集，刷题模式)** | ✅ yes | Volume parsing of linked pages; isolated fetch keeps the main thread lean |
 | Grade a quiz | ❌ no | Needs conversational context + user's answers; do inline |
 | Run the plan-quiz | ❌ no | It's a live back-and-forth; do inline |
 | Rebuild a failed chapter | ❌ no | Needs the specific failure analysis from the just-graded quiz; do inline |
@@ -445,6 +446,66 @@ summary (sources used, # stages/# chapters, any degradation).
 - Otherwise → take the skeleton, apply the allowed-adaptations table to fit the user's baseline/target_level, and write `master-plan.html` (read-mode HTML, with source citations + an adaptations section). The subagent gives you the structure; YOU do the user-specific adaptation (that needs the baseline profile, which the subagent doesn't have).
 
 **Do not skip this job before writing master-plan.html.** If you find yourself about to invent stages/chapters from memory, stop and dispatch the curriculum researcher first. The only exception is documented network failure.
+
+## Job 6: Bank fetcher (题库采集员 — 刷题模式，用户提供真题库链接时)
+
+**Purpose:** fetch and parse real exam/practice questions from user-provided link(s) into the drill workspace's `题库/`. Used at drill initialization (when the user gives links instead of / in addition to pasted text) and whenever the user supplements the bank with links mid-drill. Drill mode spec: SKILL.md「Drill-mode flow」; question-file template: references/templates.md「Drill-mode templates」.
+
+**Input to pass:** the URL(s), the drill workspace's absolute path, the first available question ID (`Q-xxx` numbering continues from the existing bank), and the `题库/Q-xxx.md` template **pasted inline** (subagents start cold — do not tell them to read the template file).
+
+**Critical tools note:** needs network access — must use `WebFetch` (and `WebSearch` only if the user asked to locate pages). Remind it explicitly: "Only record questions you actually read from fetched pages. Do NOT fabricate, complete, or 'fix' questions from memory."
+
+**Prompt skeleton:**
+
+```
+You are collecting real exam questions into a drill-mode question bank.
+
+TOOLS: Use WebFetch to read the link(s) below. Only record questions you ACTUALLY
+read from the fetched pages. Do NOT invent, complete, or "fix" questions from
+memory. If a link is unreachable or its questions are unparseable (e.g. images),
+note it and continue with the rest — do not guess.
+
+Context:
+- Topic: <topic>
+- User-provided link(s):
+  1. <url>
+- Write each extracted question to <abs path>/题库/Q-NNN.md, starting at ID <Q-xxx>
+  and incrementing (one question = one file = one ID).
+
+Use EXACTLY this file structure for every question (fill from the fetched page):
+---
+# Q-<NNN> <题目小标题>
+
+- 来源: 真题 [出处: <the exact page URL>]
+- 类型: 选择 ｜ 填空 ｜ 算法
+- 标签: <知识点关键词>
+
+## 题干
+<完整题干；选择题列全选项；填空题用 ______ 标空；算法题写清输入/输出/约束与示例>
+
+## 答案
+<页面给出的答案；页面未给答案则写「未提供 — 采集时页面无答案」>
+
+## 解析
+<页面给出的解析；没有则写「未提供」>
+---
+
+Rules:
+- Skip non-question content (ads, navigation, prose). Skip pure essay prompts with
+  no gradable answer unless the page provides a rubric.
+- Preserve the original wording of 题干 and options — do not paraphrase.
+- If a question's answer is missing, keep the file but set 答案 to the 「未提供」
+  marker exactly as shown — the main agent resolves it before the question is used.
+
+Return only: the list of file paths written (one-line topic each), the
+failed/unreachable links, and a 3-line summary.
+```
+
+**After it returns:**
+1. **Spot-check** 1–2 returned files: structure correct, 来源 URL matches a provided link, 题干 preserved verbatim. Fix malformed files inline.
+2. **Resolve unanswered questions** — any file with the 「未提供」 marker must get a determinable answer before it enters the selection pool: re-check the source page yourself, or author the answer + 解析 yourself and mark the 来源 line 「AI 判定答案」. **Never issue a question you cannot grade.**
+3. Update `题库/index.md` (append one row per new question) and the `meta.json` `bank` entries.
+4. Report dead links to the user and offer the paste-text path for those sources — never block the drill on an unreachable link.
 
 When a chapter passes, the correct order is:
 

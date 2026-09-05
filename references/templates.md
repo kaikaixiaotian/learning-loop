@@ -15,6 +15,8 @@ The markdown templates below (baseline-assessment.md, chapter doc, chapter-quiz,
 
 **Unchanged (stay markdown — internal AI use, not user-facing):** per-chapter material card (`plan/sources/*.md`), plan-quiz receipt (`stageN-chXX-plan-quiz.md`), wiki files, meta.json.
 
+**刷题模式 (drill mode) is all-markdown by design** — its templates are in the "Drill-mode templates" section at the end of this file. That is NOT a degradation fallback; drill workspaces never use HTML.
+
 ## baseline-assessment.md
 
 Located at `00-baseline/baseline-assessment.md`. The user fills this in and uploads it.
@@ -227,7 +229,8 @@ The file is AI-authored post-hoc (after the live round finishes), not handed to 
 ### Q1 (实战题, 4分)
 **题目：** <paste the question you asked live>
 **你的回答：** <paste the user's answer verbatim>
-**AI 讲评：** <one-line verdict + the correct reasoning if they missed>
+**追问：** <if the answer skipped a sub-point: the 追问 you asked + the user's supplement (or 未作答 if they explicitly passed); omit this line when the answer was complete>
+**AI 讲评：** <one-line verdict + the correct reasoning if they missed; a 未作答 sub-point is re-taught here>
 
 ### Q2 (模拟题, 4分)
 …
@@ -991,3 +994,101 @@ Standalone, double-click-to-open, vanilla, no deps. User fills the form, clicks 
 - `<form id="quizForm">`, `<button id="submitBtn" type="button">`, `<pre id="answerOutput">`, `<script id="restoreData" ...>`, `<script id="quizKey" ...>`, `<div id="gradingSummary">` all required. Every question's `<fieldset>` MUST contain a `<div class="feedback" id="fb-qN">` slot (empty initially).
 - The submit JS is the canonical version from `references/html-format.md` — copy verbatim, do not rewrite. It includes the **restore-on-load** logic: on page load, `fetch('./<quiz>-answers.json')` to refill the form (so refresh isn't blank once the user placed the downloaded json next to the html), falling back to a `localStorage` cache if fetch is CORS-blocked (Chrome on file://) or the file is absent. Both the submit handler (which writes localStorage) and the `restore()` call at the end are mandatory parts of the canonical JS.
 - Stage-total-quiz uses the SAME skeleton; just add more questions (≥2 per type, ≥2 综合) and `[出处: url]` spans inside the qmeta div for web-research citations.
+
+---
+
+## Drill-mode templates (刷题模式)
+
+刷题模式全部文件为 markdown（该模式不使用 HTML，见 SKILL.md「Drill-mode flow」）。工作区 `<topic-slug>-drill/`，初始化只建 `meta.json` + `题库/`；每轮出题动态新建一个 `题目-NNN/` 文件夹。
+
+### meta.json (drill schema)
+
+Schema 见 SKILL.md「meta.json — the state machine」末尾的 drill schema，此处不重复。要点：`mode: "drill"`、`round`、`lang`、`bank`（每题 `source/type/shown/correct/mastered/last_round/due_round`）、`variant_level`、`history`。
+
+### `题库/index.md` — 题目总目录
+
+人读的镜像；权威计数在 `meta.json`，每轮批阅后两处同步更新。
+
+```markdown
+# 题库总目录 — <topic>
+
+> 刷题模式题库。入库一题加一行；每轮批阅后更新 出现/答对/状态。
+> 统计权威源是 meta.json，本表供人快速浏览。
+
+| ID | 来源 | 类型 | 题干摘要 | 出现 | 答对 | 状态 | 最近轮次 |
+|----|------|------|----------|------|------|------|----------|
+| Q-001 | 真题 [出处: url] | 选择 | <一句话摘要> | 3 | 3 | ✅已掌握 | 题目-006 |
+| Q-002 | AI | 填空 | <一句话摘要> | 2 | 1 | 🔄练习中 · 错题复现:第7轮 | 题目-005 |
+| Q-003 | 变种(基于Q-001·难度2) | 算法 | <一句话摘要> | 0 | 0 | 🆕未出过 | — |
+```
+
+### `题库/Q-xxx.md` — 题库存档（一题一文件）
+
+题库是选题与批阅的数据源。**答案与解析存这里**（批阅时 AI 读取；作答文件里不含答案）。
+
+```markdown
+# Q-001 <题目小标题>
+
+- 来源: 真题 [出处: <url>] ｜ AI 自主出题 ｜ 变种（基于 Q-00x · 难度档 N）
+- 类型: 选择 ｜ 填空 ｜ 算法
+- 标签: <知识点关键词，供查重与变种取材>
+
+## 题干
+<完整题干。选择题列全 A/B/C/D 选项；填空题用 ______ 标空（多空按 ①② 编号）；算法题写清输入/输出/约束与示例>
+
+## 答案
+<选择题：字母。填空题：各空答案 + accept 同义写法列表，如 accept: ["引用", "reference"]。算法题：参考实现要点（或参考代码）+ 关键测试用例的期望输出>
+
+## 解析
+<为什么是这个答案；每个错误选项/常见错法对应的真实误解。批阅讲评直接引用此处>
+```
+
+入库规则：一题一文件一 ID；无法判定答案的采集题（如页面未给答案）须由 AI 补出答案并在来源行标注「AI 判定答案」后才能进入选题池——**不出无法批阅的题**。
+
+### `题目-NNN/题目.md` — 每轮作答文件
+
+每轮新建一个文件夹；重复出现的题同样新建（历史作答全部留档）。
+
+```markdown
+# 题目-NNN · <题目小标题>
+
+- 题目ID: Q-xxx · 第 N 次作答
+- 来源: <同题库> · 类型: <选择/填空/算法>
+
+## 题目
+<从题库存档复制的完整题干——本文件自包含，作答与复习无需再翻题库>
+
+## 你的答案
+<!-- 选择题写字母（多选逗号分隔）；填空题按空作答；算法题写「见 solution.py」 -->
+
+（在此作答）
+
+---
+*AI 批阅区（AI 批阅后填写，用户请勿改动）*
+- 判定: （✓ 正确 / ✗ 错误）
+- 讲评: <对→一句确认或深化；错→讲清概念而非只报答案，引用题库解析；算法题→指出未通过用例与修复方向>
+- 记录: 第 N 次作答 · 累计答对 M 次 · <已掌握 / 错题将在后续随机轮次复现>
+```
+
+### `题目-NNN/solution.<ext>` — 算法题代码文件（仅算法题）
+
+与 `题目.md` 同目录创建；语言取 `meta.json` 的 `lang`（默认 python）。用户直接在本文件实现。
+
+```python
+"""题目-NNN · Q-xxx <题目小标题>
+
+要求:
+  <函数职责一句话>
+  输入: <类型与含义>
+  输出: <类型与含义>
+  约束: <数据范围 / 边界条件>
+
+直接在下方的 TODO 处实现，完成后跟 AI 说「做好了」。
+最小自测（AI 批阅时会实际运行）:
+  <fn>(<示例输入1>) -> <期望输出1>
+  <fn>(<示例输入2, 含一个边界情形>) -> <期望输出2>
+"""
+def <fn>(<args>):
+    # TODO: 实现
+    ...
+```

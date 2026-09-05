@@ -92,7 +92,7 @@ Recommended mix for a plan-quiz of ~6 questions:
 - 1 算法/推导
 - 1 高难度综合
 
-Ask one question, wait for the answer, then the next. After the last, score and combine with the chapter quiz for the pass/fail gate (combined = 0.45 × chapter + 0.55 × plan, ≥0.80 passes — see `grading.md`).
+Ask one question, wait for the answer, then the next. **Before scoring each answer, run the completeness check (漏答追问):** a live answer must address every point the question asked — sub-questions, 小问, required dimensions. If the reply skipped a point, follow up naming it and restating that part — 「第 X 题里的『某某点』你还没有作答——题目问的是……，请补充」 — and wait; the supplement joins the answer and grades normally. One follow-up per question is the cap: if the user explicitly passes (不会/跳过) or still misses the point after that follow-up, record the sub-point as 未作答 — 0 on its share, noted in the 失分点 + 批阅区, re-taught in the 讲评 — and move on. Every asked point must end resolved (answered or explicitly 未作答); never silently drop one from grading. After the last, score and combine with the chapter quiz for the pass/fail gate (combined = 0.45 × chapter + 0.55 × plan, ≥0.80 passes — see `grading.md`).
 
 Dynamic mixing inside the plan-quiz still adapts to signals: chapter nature (skill chapters lean 实战), user level (high → heavier 算法/综合), past weak spots (re-probe them from a new angle).
 
@@ -103,3 +103,40 @@ Covers all chapters in the stage. **Volume follows content breadth** — roughly
 - Sections 一 (选择题) + 二 (填空题), drawn across all chapters; include **≥2 组合多选题 whose correct sets span ≥2 chapters' assertions** (this replaces the old cross-chapter 综合 quota objectively).
 - End with **at most 1** textarea 文字综合题 spanning multiple chapters (5–8 分; rubric-graded; may be omitted).
 - Questions re-probe the weak spots recorded in chapter wikis. Same ≥0.80 gate as before.
+
+## Drill-mode question rules (刷题模式出题规则)
+
+刷题模式是独立于表单测验/plan-quiz 的第三套出题场：题目存进 `题库/`（数据源），每轮随机选一题放入新建的 `题目-NNN/` 文件夹让用户作答。出题规则如下（状态机与选题优先级见 SKILL.md「Drill-mode flow」）。
+
+### 题型与作答方式（仅三类）
+
+| 类型 | 作答方式 | 批阅依据 |
+|------|----------|----------|
+| **选择题**（单/多选） | 用户直接写入 `题目.md` 作答区（字母） | 题库存档的答案 |
+| **填空题** | 用户直接写入作答区（按空作答） | 答案 + `accept` 同义列表 |
+| **算法题** | 用户在同文件夹的代码文件（`solution.<ext>`）里实现 | 尽量实际运行最小用例验证；无运行时则静态推演并注明 |
+
+三类都来自题库存档（`题库/Q-xxx.md`），作答文件里**不得**出现答案或解析。
+
+### 题目来源与优先级
+
+- **真题**（用户粘贴）/ **链接采集**（Job 6 子代理抓取）——刷题的核心素材，优先级最高。
+- **AI 自主出题**（`source: "AI"`）——题库为空时的启动素材、以及真题覆盖不了的知识面补充；用户补充真题后真题优先。
+- **变种**（`source: "变种"`）——全部真题掌握后，基于真题生成的加难题目。
+
+### AI 自主出题质量要求（与客观化转换指南同源）
+
+- 干扰项硬规则沿用上文：每个错误选项必须对应一个**真实常见误解**或该主题的边界陷阱，禁止凑数选项；情境题所有选项都要初看可辩护。
+- 填空题空位必须答案唯一；存在同义写法时在题库 `accept` 列表里列全。
+- 算法题必须**可运行验证**：输入/输出/约束明确 + 文件头里给最小自测用例（含一个边界情形）；不出无法批阅的题。
+- 初始 AI 题组（用户暂无真题时）：约 5–8 题，覆盖主题主要知识面，易→难；宁可小而准，题库随后随真题补充生长。
+
+### 变种难度阶梯（variant_level）
+
+全部真题 mastered 后进入变种阶段，从真题题库取材生成变种，每提升一档 `variant_level` 难度上一级：
+
+1. **难度 1 — 改条件**：换数值/换场景/加一个约束，考同一条结论的迁移。
+2. **难度 2 — 换角度**：逆问（给结论推条件）、对比辨析（与易混淆概念混合出题）、边界加深。
+3. **难度 3 — 组合**：合并两道及以上真题的考点成一题（组合选择/综合填空/复合算法题）。
+
+每个变种必须在题库存档中标注基于哪道真题（`变种（基于Q-00x · 难度档N）`），并同样进入掌握闭环（≥3 次答对才算掌握）。刷题空间无上限：真题可随时补充，变种档位可无限递增。
