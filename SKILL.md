@@ -1,7 +1,7 @@
 ---
 name: learning-loop
 version: 1.7.0
-description: Guide a user through AI-assisted mastery of any skill or domain via a structured, self-paced closed-loop learning system. Use whenever the user wants to learn, study, be taught, or get trained on a topic — including phrases like "教我学习 X"、"我想学 X"、"帮我掌握 X"、"学习计划"、"训练我"、"带我学"、"tutor me on X"、"I want to learn X". Triggers on first run (initializes a plan) AND on every subsequent run (auto-resumes from saved progress). Also use when the user submits a quiz (answers.json downloaded from an HTML quiz form) and expects grading + next steps. Also use when the user wants 刷题 (drill practice) — "刷题"、"刷题模式"、"帮我刷 X 的题"、"题库"、"真题练习"、"drill me on X" — which initializes or resumes a drill-mode workspace: a question-bank-driven loop where the AI issues ONE random question per round as a markdown file, the user answers directly in the md (选择/填空) or in a code file (算法题), every question must be answered correctly ≥3 times to count as mastered, wrong answers resurface at random later rounds, real-exam questions (真题) can be supplied anytime by paste or link, and a fully-mastered real-question bank escalates into harder AI-generated variants with no upper limit. Also use when the user asks to upgrade or update the learning-loop skill itself — "learning-loop upgrade", "/learning-loop upgrade", 升级/更新 learning-loop.
+description: Guide a user through AI-assisted mastery of any skill or domain via a structured, self-paced closed-loop learning system. Use whenever the user wants to learn, study, be taught, or get trained on a topic — including phrases like "教我学习 X"、"我想学 X"、"帮我掌握 X"、"学习计划"、"训练我"、"带我学"、"tutor me on X"、"I want to learn X". Triggers on first run (initializes a plan) AND on every subsequent run (auto-resumes from saved progress). Also use when the user submits a quiz (answers.json downloaded from an HTML quiz form) and expects grading + next steps. Also use when the user wants 刷题 (drill practice) — "刷题"、"刷题模式"、"帮我刷 X 的题"、"题库"、"真题练习"、"drill me on X" — which initializes or resumes a drill-mode workspace: a knowledge-point-driven loop where the AI issues ONE question per round as a markdown file, question types climb a per-knowledge-point difficulty ladder (选择 → 填空 → 应用题 requiring accurate reasoning → variants), mastery of each knowledge point is judged by the AI itself (no fixed answer-count rule), mastered knowledge points resurface at random intervals to prevent forgetting — questions are vehicles, mastered knowledge is the goal — and 真题 can be supplied anytime by paste or link, with AI-generated variants raising difficulty without limit. Also use when the user asks to upgrade or update the learning-loop skill itself — "learning-loop upgrade", "/learning-loop upgrade", 升级/更新 learning-loop.
 ---
 
 # Learning Loop
@@ -39,18 +39,19 @@ You run a **closed-loop learning system**: the AI teaches, the user proves maste
 [stage end] last chapter passed → ask "next stage?" → yes: stage total quiz → repeat; no: done
 ```
 
-**刷题模式** (drill mode — chosen at init) runs a separate bank-driven loop instead:
+**刷题模式** (drill mode — chosen at init) runs a separate knowledge-driven loop instead:
 
 ```
 [init] mode? ── 学习模式（默认）→ 上面的闭环
        └───── 刷题模式 → [题库] 建库（真题粘贴 / 链接采集子代理 / AI 自主出题）
                   ↓
-              [drill] 随机选一题 → 创建 题目-NNN/（md 作答区 + 算法题代码文件）→ 用户作答
+              [drill] 选一个知识点 → 按其 stage 出一题（选择→填空→应用→变种）
+                      → 创建 题目-NNN/（md 作答区 + 算法题代码文件）→ 用户作答
                   ↓
-              批阅写回 题目.md + meta.json 计数
-                  ↑                                      │
-                  └── 未掌握：错题按随机 due_round 复现，继续随机出题 ←┘
-                        全部真题掌握 → 生成变种（难度递增）→ 继续循环（无上限）
+              批阅写回 题目.md（含正确代码示例）+ 更新知识点 stage 与掌握判断
+                  ↑                                    │
+                  └── 答错：随机排期复现；已掌握：随机排期防遗忘复习 ←┘
+                        知识点 stage 逐级爬升、变种加难 → 循环无上限
 ```
 
 Both modes are **state machines**. Persist state in `meta.json` (learning schema below; drill schema in the Drill-mode flow section) so any future invocation can resume.
@@ -168,19 +169,28 @@ This file is the contract between invocations. Update it after every state trans
   "phase": "drill",
   "round": 7,                    // rounds issued so far = highest 题目-NNN number
   "lang": "python",              // 算法题 language (default python), set before the first 算法题
-  "bank": {
+  "bank": {                      // per-question stats — questions are vehicles, NOT the tracking unit
     "Q-001": {
       "source": "真题",           // AI | 真题 | 链接 | 变种
-      "type": "选择",             // 选择 | 填空 | 算法
-      "shown": 3,                // 出现次数 (rounds in which it was issued)
+      "type": "选择",             // 选择 | 填空 | 应用 | 算法
+      "knowledge": "引用语义",    // 所属知识点（单一必填；主键 into the knowledge map）
+      "shown": 3,                // 出现次数
       "correct": 3,              // 累计答对次数
-      "mastered": true,          // correct ≥ 3 且最近一次作答正确
-      "last_round": 6,           // 最近一次出现的轮次
-      "due_round": null          // 答错后随机排定的复现轮次; null = 无待复现
+      "last_round": 6            // 最近一次出现的轮次
     }
   },
-  "variant_level": 0,            // 变种难度档; 全部真题掌握后开始递增
-  "history": []                  // append-only event log (init / issue / grade / supplement / variant)
+  "knowledge": {                 // THE tracking unit — 掌握知识才是关键
+    "引用语义": {
+      "stage": 3,                // 题型阶梯 1选择 → 2填空 → 3应用(说准原因; 编程主题=算法) → 4变种/组合
+      "status": "mastered",      // learning | mastered — 由 AI 综合判断（无固定答对次数规则）
+      "due_round": 12,           // 下次出现轮次: 答错=随机复现; mastered=随机防遗忘复习; null=随轮可选
+      "attempts": 8,             // 该知识点累计作答次数
+      "correct": 7,              // 该知识点累计答对次数
+      "last_round": 7            // 最近一次被考查的轮次
+    }
+  },
+  "variant_level": 0,            // 变种难度档（知识点进入 stage 4 后随进度递增）
+  "history": []                  // append-only event log (init / issue / grade / mastery-judged / supplement / variant)
 }
 ```
 
@@ -301,7 +311,7 @@ The stage total is a real gate, not a formality — if it's too easy to pass wit
 
 ## Drill-mode flow (刷题模式)
 
-Triggered when the user chose 刷题模式 at initialization (step 1 of the Initialization flow), or on any resume of a `*-drill/` workspace. The drill mode is a **separate, pure-markdown loop**: no HTML forms, no `references/html-format.md` rules, no baseline, no plan, no chapters, no wiki. It is a question-bank-driven drill — the AI issues **one question per round**, the user answers directly in files, the AI grades and records, and the bank itself drives repetition and difficulty. There is **no upper bound**: the loop runs as long as the user keeps going.
+Triggered when the user chose 刷题模式 at initialization (step 1 of the Initialization flow), or on any resume of a `*-drill/` workspace. The drill mode is a **separate, pure-markdown loop**: no HTML forms, no `references/html-format.md` rules, no baseline, no plan, no chapters, no wiki. It is a knowledge-driven drill — the AI issues **one question per round** chosen for a knowledge point at its current stage of the difficulty ladder, the user answers directly in files, and the AI grades, records, and judges mastery of the **knowledge point**. **The tracking and mastery unit is the knowledge point, not the question** — questions are just vehicles for knowledge (题目不是关键，掌握知识才是关键): the same knowledge can be re-tested with a different type, angle, or variant at any time. There is **no upper bound**: rounds, bank size, ladder stages, and variant levels all grow for as long as the user keeps going.
 
 ### Drill initialization (first run only)
 
@@ -309,7 +319,7 @@ Triggered when the user chose 刷题模式 at initialization (step 1 of the Init
 2. **Build the bank from the input:**
    - **粘贴文本** → format each question into a `题库/Q-xxx.md` file yourself (no subagent needed).
    - **真题库链接** → dispatch the bank-fetcher subagent (Job 6 in `references/subagent-protocol.md`) to fetch + parse the linked pages into `题库/Q-xxx.md` files. On network failure, degrade: report the dead link and accept pasted text instead — never block the start on an unreachable link.
-   - **暂无** → **AI 自主出题**: author a starter set (≈5–8 questions covering the topic's main knowledge areas, easy → hard) into the bank with `source: "AI"`. Quality rules in `references/quiz-types.md` (刷题模式出题规则) apply. The user can supplement 真题 at any later round.
+   - **暂无** → **AI 自主出题**: author a starter set (≈5–8 questions covering the topic's main knowledge points) into the bank with `source: "AI"` — **each question tags exactly ONE knowledge point**, and every knowledge point's first question is a stage-1 选择题 (the ladder always starts at recognition). Quality rules in `references/quiz-types.md` (刷题模式出题规则) apply. The user can supplement 真题 at any later round.
 3. **Create the workspace**: `meta.json` (drill schema, `mode: "drill"`, `phase: "drill"`, `round: 0`, `variant_level: 0`) + `题库/index.md` + one file per question. Nothing else — no `chapters/`, no `quizzes/`, no `wiki/`.
 4. If the topic involves coding, ask the preferred language for 算法题 (default Python) and record it in `meta.json` `lang` before the first 算法题 is issued.
 5. **Immediately issue round 1** (per-round flow below), then stop and wait.
@@ -318,34 +328,39 @@ Triggered when the user chose 刷题模式 at initialization (step 1 of the Init
 
 Every round = one new folder = one question. Never batch questions.
 
-1. **Pick one question** by the selection rules below. Create the round folder `题目-NNN/` (NNN = `round` + 1, zero-padded to 3 digits) containing `题目.md` per the template in `references/templates.md`: header (题目ID / 第 N 次作答 / 来源 / 类型), the **full question text copied from the bank file** (the round folder must be self-contained), an empty **作答区**, and an empty **AI 批阅区**. For a 算法题, also create the code file (e.g. `solution.py` per meta `lang`) **in the same folder** with the function signature + TODO + input/output/constraints + minimal test hints — the user implements there.
-2. Tell the user the folder path and how to answer: 选择/填空 → write the answer directly into `题目.md`'s 作答区; 算法题 → implement in the code file. **Stop and wait.**
+1. **Pick one knowledge point, then one question at its stage** (selection rules below). The KP's ladder stage decides the question type — stage 1 选择, stage 2 填空, stage 3 应用 (编程主题 = 算法题 with a code file), stage 4 变种/组合. Reuse a bank question when one fits the KP + stage; otherwise author a new one into the bank first (real-question material outranks AI-authored). Create the round folder `题目-NNN/` (NNN = `round` + 1, zero-padded to 3 digits) containing `题目.md` per the template in `references/templates.md`: header (题目ID / 第 N 次作答 / 来源 / 类型 / 知识点·stage), the **full question text copied from the bank file** (the round folder must be self-contained), an empty **作答区**, and an empty **AI 批阅区**. For a 算法题, also create the code file (e.g. `solution.py` per meta `lang`) **in the same folder** with the function signature + TODO + input/output/constraints + minimal test hints — the user implements there.
+2. Tell the user the folder path and how to answer: 选择/填空 → write the answer directly into `题目.md`'s 作答区; 应用题 → write the conclusion AND the accurate reason (code/commands welcome) into the 作答区; 算法题 → implement in the code file. **Stop and wait.**
 3. When the user says 做好了: **Read `题目.md`** (and the code file for 算法题). If the 作答区 is empty (and no code was written), ask and wait — never grade an empty submission.
-4. **Grade.** 选择/填空: compare against the bank file's 答案 (use its `accept` synonym list for 填空). 算法题: verify by actually running the code against the minimal cases when a runtime is available (a temp script outside the workspace); if no runtime, grade by careful static reasoning and say so in the 批阅区. Verdict: ✓ / ✗.
-5. **Write back (mandatory, dual):** fill the 批阅区 in that `题目.md` — verdict + 讲评 (for wrong answers teach the underlying concept, don't just reveal the answer; for 算法题 name the failing case and the fix direction) — **AND** update `meta.json`: `shown`/`correct`, `mastered`, `due_round`, `round`, `last_round`, plus a `history` event. Also update the question's row in `题库/index.md`.
+4. **Grade.** 选择/填空: compare against the bank file's 答案 (use its `accept` synonym list for 填空). 应用题: the conclusion AND the reason must both be correct — a right conclusion with a wrong or missing reason is ✗; if the reason is missing, follow up ONCE asking for it (漏答追问 pattern) before grading. 算法题: verify by actually running the code against the minimal cases when a runtime is available (a temp script outside the workspace); if no runtime, grade by careful static reasoning and say so in the 批阅区. Verdict: ✓ / ✗.
+5. **Write back (mandatory, dual):** fill the 批阅区 in that `题目.md` — verdict + 讲评 (for wrong answers teach the underlying concept, don't just reveal the answer; for 算法题 name the failing case and the fix direction; for 应用题 point out where the reasoning went wrong) **+ 正确代码示例 (mandatory in EVERY round's 点评, right or wrong)**: 算法题 → the bank file's reference implementation (user was correct → still show it as 对照/更优写法; user was wrong → the fixed code or the core corrected snippet); 选择/填空/应用 → the smallest runnable code/command/config snippet that demonstrates why the correct answer is correct — **AND** update `meta.json`: the question's `shown`/`correct`/`last_round`, plus the **knowledge map** — `attempts`/`correct`/`last_round`; stage 晋级（答对且理由充分；表现强可跳级）/ 停留（答错）/ 退回（复习答错）; the **mastery judgment** (promote to `mastered` / demote to `learning`, judgment reason written into the 记录 line + a `mastery-judged` history event); and `due_round` scheduling (wrong answer → random resurfacing within the next **5–10** rounds, or **8–15** rounds if the same KP already erred again — spacing rule in Selection & mastery rules; newly mastered → random anti-forgetting review within 3–8 rounds, lengthening as reviews pass). Also update the question's row and the 知识点进度 table in `题库/index.md`. The example comes from the bank file's 答案 section (prepared at bank-creation time — see `references/templates.md`); a verdict without a correct example to compare against teaches half the lesson.
 6. **Create the next round folder** (step 1) and stop. Repeat indefinitely.
 
-### Selection rules (随机选题 + 掌握闭环 — non-negotiable)
+### Selection & mastery rules (知识点中心 — non-negotiable)
 
-- **Random selection, one per round**; never the same question two rounds in a row (unless the bank has exactly one question). The same question MAY be picked again in later rounds — repetition is the mechanism, not a bug.
-- **Priority order** when several candidates exist:
-  1. Any question whose `due_round` ≤ current round — **错题复现**. A wrong answer schedules its return at a *random* later round (e.g. somewhere within the next 2–5 rounds, chosen unpredictably), never immediately.
-  2. Unmastered 真题 (source 真题/链接).
-  3. Unmastered AI 题.
-  4. A fresh 变种题 (variant stage only).
-- **Mastery**: a question is `mastered: true` when **累计答对 ≥ 3 次 且最近一次作答正确**. A wrong answer re-opens the question — counters stay, but it re-enters the resurfacing cycle via a new random `due_round`.
-- **Variant stage (变种加难)**: once **every** 真题/链接 question is mastered, stop issuing plain repeats and generate **variants from the real bank** — change the conditions, flip the question angle, combine two questions, or deepen a boundary case — one difficulty step per `variant_level` increment (ladder in `references/quiz-types.md`). Each variant enters the bank (`source: "变种"`, noting which 真题 it derives from) and follows the same mastery rules. Supplementing new 真题 later outranks variants, pulling the loop back to real questions.
-- The drill space has **no ceiling**: rounds, bank size, and variant levels all grow without limit for as long as the user continues.
+**单位是知识点，不是题目。** 题目只是考查知识的载体——同一知识可换题型、换角度、换变种反复考。
+
+- **Per-round**: pick ONE knowledge point, then one question at its current ladder stage. Selection is random; never the same knowledge point two rounds in a row (unless there is exactly one).
+- **题型阶梯（per-KP stage 1→4）**: 选择（识别）→ 填空（精确回忆）→ 应用（情境应用 + **说出准确原因**；编程主题 = 算法实现）→ 变种/组合（迁移综合，难度随 `variant_level` 递增）。每个知识点独立爬梯；新知识点（含补充真题引入的）一律从 stage 1 选择起步。晋级由 AI 判断：答对且理由充分 → 晋级（表现强可跳级）；答错 → 停留当前 stage。
+- **Priority order** when several knowledge points are candidates:
+  1. Any KP whose `due_round` ≤ current round — **错题复现或防遗忘复习**（均为随机排期，不立即重出）。
+  2. `learning` 中的知识点——优先薄弱的（错误多 / stage 停滞的）。
+  3. 新知识点（补充真题或 AI 补充知识面引入）。
+  4. `mastered` 且无复习排期的知识点，也可在轮次间随机插入复习（防止遗忘）。
+- **掌握判定由 AI 作出（无固定次数规则）**：依据该知识点在选择/填空/应用多题型上的表现、应用题原因是否准确、错误是否已通过复现纠正、变种题表现综合判断。达 stage ≥3 且 AI 判定已掌握 → `status: "mastered"`；**判断理由写入该轮批阅区记录行 + 一条 `mastery-judged` history 事件**。复习答错 → 退回 `learning`（AI 定重爬起点，通常 stage 2），讲评加强。
+- **复现排期（间隔要够长 — 间隔效应）**：答错的知识点随机排在**后续 5–10 轮**内复现，不紧邻重考——刚讲评完就重考只会测到短时记忆，隔得够久才考得到长期记忆；同一知识点连续再错 → 间隔拉长到 **8–15 轮**随机（连续错的间隔只会更长，不会更短）。
+- **防遗忘复习**: mastered 知识点在批阅后随机排期 `due_round`（初始在后续 3–8 轮内随机，复习通过后间隔拉长）；复习通常出 stage ≥2 的题或变种——**原题或变种都可被重复出**，题目重复不是问题，知识保持才是目标。
+- **变种绑定进度**: 知识点到 stage 4 或掌握后的复习加深时，即可基于该知识点的真题生成变种——改条件、换角度、组合多题、加深边界——难度随 `variant_level` 逐档提升（ladder in `references/quiz-types.md`）。变种标注来源（`变种（基于Q-00x · 难度档N）`）与所属知识点，纳入同一套 stage/掌握跟踪。补充新真题随时且优先于变种。
+- The drill space has **no ceiling**: rounds, bank size, knowledge points, ladder stages, and variant levels all grow without limit for as long as the user continues.
 
 ### Supplementing the bank (随时补充真题)
 
-At ANY round the user may say 补充真题 with pasted text or link(s). Paste → format into new `题库/Q-xxx.md` entries yourself; links → Job 6 subagent. Update `题库/index.md` + the `meta.json` bank, then continue the round in progress. Never defer a mid-drill supplement — it takes effect from the very next selection.
+At ANY round the user may say 补充真题 with pasted text or link(s). Paste → format into new `题库/Q-xxx.md` entries yourself; links → Job 6 subagent. Update `题库/index.md` + the `meta.json` bank, then continue the round in progress. Never defer a mid-drill supplement — it takes effect from the very next selection. New knowledge points introduced by supplemented questions start at stage 1 (选择) like any other.
 
 ### Drill resume (every non-first invocation on a `*-drill/` workspace)
 
-1. Read `meta.json`; glob `题目-*/题目.md` and take the highest NNN — **trust the files over `meta.json` `round` if they diverge**.
+1. Read `meta.json`; glob `题目-*/题目.md` and take the highest NNN — **trust the files over `meta.json` `round` if they diverge**. If meta.json still uses the pre-release question-centric layout (bank entries with `mastered`/`due_round`, no `knowledge` map), migrate loosely on read — build the knowledge map from the questions' 知识点 tags, translate old flags into best-guess `stage`/`status`, write the migrated meta back — then continue.
 2. If the highest round's 批阅区 is still empty → an ungraded round is pending: grade it first (per-round flow steps 3–5), then continue.
-3. Issue the next round per the selection rules. One-line status first: 主题 / 已刷轮数 / 题库规模 / 已掌握题数.
+3. Issue the next round per the selection rules. One-line status first: 主题 / 已刷轮数 / 题库规模 / 已掌握知识点数.
 
 ## Question composition — non-negotiable
 
@@ -385,5 +400,5 @@ Subagents run isolated; give them the wiki content and the templates inline so t
 
 - After every transition, give the user a one-line status (stage/chapter/phase) and the single next action. Long status dumps break the learning flow.
 - When asking the plan-quiz live, ask one question at a time and wait — don't batch. If an answer skips a point the question asked, follow up naming that point and restating it before grading (漏答追问, see the plan-quiz flow).
-- Drill mode: same one-at-a-time discipline — after grading a round, give a one-line status (轮次 / 本题对错 / 题库已掌握数) before creating the next question folder. When analyzing a wrong answer, teach the concept before the next round starts.
+- Drill mode: same one-at-a-time discipline — after grading a round, give a one-line status (轮次 / 本题对错 / 已掌握知识点数) before creating the next question folder. When analyzing a wrong answer, teach the concept before the next round starts.
 - When analyzing wrong answers, teach the concept, don't just reveal the answer. The user should be able to re-derive it.
